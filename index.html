@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IV Roster Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#f0f0f0;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.login-container{background:#fff;border-radius:16px;padding:40px 36px;width:380px;max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,0.1);text-align:center;}
+.logo{height:60px;margin-bottom:16px;}
+h1{font-family:'Playfair Display',serif;font-size:1.5rem;color:#0068b3;margin-bottom:4px;}
+.subtitle{font-size:.8rem;color:#666;margin-bottom:28px;}
+.form-group{margin-bottom:16px;text-align:left;}
+.form-group label{font-size:.75rem;color:#666;display:block;margin-bottom:5px;}
+.form-group input{width:100%;padding:11px 14px;border:1px solid #ddd;border-radius:8px;font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;}
+.form-group input:focus{border-color:#0068b3;}
+.btn-login{width:100%;padding:12px;background:#0068b3;color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;margin-top:8px;}
+.btn-login:hover{background:#4da0d8;}
+.btn-login:disabled{opacity:.5;cursor:not-allowed;}
+.error-msg{color:#c0392b;font-size:.78rem;margin-top:12px;display:none;}
+.loading{display:none;text-align:center;padding:40px;color:#666;font-size:.85rem;}
+.dashboard{display:none;max-width:900px;margin:0 auto;padding:20px;}
+.dash-header{text-align:center;margin-bottom:24px;}
+.dash-header h1{margin-bottom:4px;}
+.user-info{font-size:.78rem;color:#666;margin-bottom:6px;}
+.btn-logout{background:none;border:1px solid #ddd;border-radius:6px;padding:5px 12px;font-size:.72rem;color:#666;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-logout:hover{border-color:#c0392b;color:#c0392b;}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.card{background:#fff;border:1px solid #ddd;border-radius:12px;padding:24px 18px;cursor:pointer;transition:all .2s;text-decoration:none;color:#333;box-shadow:0 2px 8px rgba(0,0,0,0.06);text-align:center;}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,104,179,0.15);border-color:#0068b3;}
+.card.disabled{opacity:.5;cursor:not-allowed;pointer-events:none;}
+.card-icon{font-size:2.2rem;margin-bottom:8px;}
+.card-title{font-family:'Playfair Display',serif;font-size:1.2rem;color:#0068b3;margin-bottom:4px;}
+.card-desc{font-size:.75rem;color:#666;line-height:1.4;}
+.card-access{font-size:.68rem;margin-top:8px;padding-top:8px;border-top:1px solid #eee;font-weight:600;}
+.access-full{color:#2d7a3a;}
+.access-view{color:#b36800;}
+.access-none{color:#999;}
+@media(max-width:500px){.cards{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- Login Form -->
+<div class="login-container" id="loginView">
+  <img src="iv-logo.png" alt="IV Logo" class="logo">
+  <h1>Auckland Ismaili Volunteers</h1>
+  <p class="subtitle">Roster Generator · Sign In</p>
+  <form id="loginForm" onsubmit="handleLogin(event)">
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="emailInput" placeholder="your@email.com" required>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="passwordInput" placeholder="••••••••" required>
+    </div>
+    <button type="submit" class="btn-login" id="loginBtn">Sign In</button>
+  </form>
+  <div class="error-msg" id="errorMsg"></div>
+</div>
+
+<!-- Loading -->
+<div class="loading" id="loadingView">Checking session...</div>
+
+<!-- Dashboard (after login) -->
+<div class="dashboard" id="dashboardView">
+  <div class="dash-header">
+    <img src="iv-logo.png" alt="IV Logo" style="height:50px;margin-bottom:10px;">
+    <h1>Auckland Ismaili Volunteers</h1>
+    <div class="user-info" id="userInfo"></div>
+    <button class="btn-logout" onclick="signOut()">Sign Out</button>
+  </div>
+  <div class="cards" id="teamCards"></div>
+</div>
+
+<script>
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const errEl = document.getElementById('errorMsg');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+
+  try {
+    await signIn(
+      document.getElementById('emailInput').value.trim(),
+      document.getElementById('passwordInput').value
+    );
+    await checkAuthAndRoute();
+  } catch (err) {
+    errEl.textContent = err.message || 'Invalid credentials';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
+}
+
+async function checkAuthAndRoute() {
+  const loginView = document.getElementById('loginView');
+  const loadingView = document.getElementById('loadingView');
+  const dashboardView = document.getElementById('dashboardView');
+
+  loginView.style.display = 'none';
+  loadingView.style.display = 'block';
+
+  const session = await getSession();
+  if (!session) {
+    loadingView.style.display = 'none';
+    loginView.style.display = 'block';
+    document.body.style.display = 'flex';
+    return;
+  }
+
+  const profile = await getUserProfile();
+  if (!profile) {
+    loadingView.style.display = 'none';
+    loginView.style.display = 'block';
+    document.getElementById('errorMsg').textContent = 'No profile found. Contact admin.';
+    document.getElementById('errorMsg').style.display = 'block';
+    document.body.style.display = 'flex';
+    return;
+  }
+
+  // Store profile for roster pages to use
+  sessionStorage.setItem('ivProfile', JSON.stringify(profile));
+
+  // Show dashboard
+  loadingView.style.display = 'none';
+  dashboardView.style.display = 'block';
+  document.body.style.display = 'block';
+  document.body.style.padding = '20px';
+
+  renderDashboard(profile);
+}
+
+function renderDashboard(profile) {
+  const roleLabels = { admin: 'Administrator', team_leader: 'Team Leader', viewer: 'Viewer' };
+  const teamLabel = profile.team ? ` · Team ${profile.team}` : ' · All Teams';
+  document.getElementById('userInfo').textContent = `${profile.name || profile.email} · ${roleLabels[profile.role]}${teamLabel}`;
+
+  const canEditA = profile.role === 'admin' || (profile.role === 'team_leader' && profile.team === 'A');
+  const canEditB = profile.role === 'admin' || (profile.role === 'team_leader' && profile.team === 'B');
+  const canViewA = true; // everyone can view
+  const canViewB = true;
+
+  let cards = '';
+
+  // Team A card
+  const accessA = canEditA ? '<span class="access-full">✓ Full Access</span>' : '<span class="access-view">👁 View Only</span>';
+  cards += `<a href="iv_team_a_roster.html" class="card">
+    <div class="card-icon">🅰️</div>
+    <div class="card-title">Team A</div>
+    <div class="card-desc">Odd cycles: Jan, Mar, May, Jul, Sep, Nov</div>
+    <div class="card-access">${accessA}</div>
+  </a>`;
+
+  // Team B card
+  const accessB = canEditB ? '<span class="access-full">✓ Full Access</span>' : '<span class="access-view">👁 View Only</span>';
+  cards += `<a href="iv_team_b_roster.html" class="card">
+    <div class="card-icon">🅱️</div>
+    <div class="card-title">Team B</div>
+    <div class="card-desc">Even cycles: Feb, Apr, Jun, Aug, Oct, Dec</div>
+    <div class="card-access">${accessB}</div>
+  </a>`;
+
+  document.getElementById('teamCards').innerHTML = cards;
+}
+
+// On page load, check if already logged in
+checkAuthAndRoute();
+</script>
+</body>
+</html>

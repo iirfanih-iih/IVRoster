@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IV Team B – Roster Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+:root{--primary:#0068b3;--primary-light:#4da0d8;--bg-main:#f0f0f0;--bg-alt:#fff;--text-main:#333;--text-light:#666;--border-color:#ddd;--shadow:0 2px 8px rgba(0,0,0,0.08);--cream2:#f8f8f5;--dark:#222;--mid:#888;--border:#e0e0e0;--gold:#d4a017;--deep:#1a1a2e;--success:#2d7a3a;--radius:8px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg-main);color:var(--text-main);min-height:100vh;}
+header{background:var(--bg-alt);color:var(--primary);padding:10px 20px;display:flex;align-items:center;gap:15px;border-bottom:1px solid var(--border-color);box-shadow:var(--shadow);}
+header img{height:40px;}
+header h1{font-family:'Playfair Display',serif;font-size:1.5rem;margin:0;}
+header p{font-size:.78rem;color:var(--text-light);margin-top:2px;}
+.app{display:flex;min-height:calc(100vh - 74px);}
+.sidebar{width:290px;min-width:270px;background:var(--bg-alt);color:var(--text-main);padding:20px 16px;display:flex;flex-direction:column;gap:14px;border-right:1px solid var(--border-color);overflow-y:auto;}
+.sidebar-title{font-family:'Playfair Display',serif;font-size:.75rem;color:var(--primary);letter-spacing:.12em;text-transform:uppercase;}
+.event-list{display:flex;flex-direction:column;gap:5px;}
+.event-item{background:var(--bg-main);border:1px solid var(--border-color);border-radius:8px;padding:9px 11px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:space-between;}
+.event-item:hover{background:rgba(0,104,179,.08);border-color:var(--primary);}
+.event-item.active{background:rgba(0,104,179,.15);border-color:var(--primary-light);}
+.event-item-left{display:flex;flex-direction:column;gap:2px;}
+.event-item-name{font-size:.79rem;font-weight:500;color:var(--text-main);}
+.event-item-date{font-size:.68rem;color:var(--primary);}
+.event-badge{font-size:.6rem;font-weight:600;padding:2px 6px;border-radius:20px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;}
+.badge-friday{background:#2d4a2d;color:#7fc97f;}.badge-chandraat{background:#1a2d4a;color:#7fb3fc;}
+.badge-baithulkhayal{background:#2d1a4a;color:#b87ffc;}.badge-paanch{background:#4a2d1a;color:#fc9f7f;}
+.badge-student{background:#1a3a2d;color:#7fdc9f;}
+.btn-add-event{background:rgba(0,104,179,.08);border:1px dashed var(--primary);border-radius:8px;color:var(--primary);font-size:.77rem;padding:8px;cursor:pointer;text-align:center;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.btn-add-event:hover{background:rgba(0,104,179,.15);}
+.btn-reset{background:none;border:1px dashed rgba(252,127,127,.4);border-radius:8px;color:#fc9f9f;font-size:.77rem;padding:8px;cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;}
+.main{flex:1;padding:24px 28px;overflow-y:auto;}
+.main-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.main-title{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--text-main);}
+.main-sub{font-size:.8rem;color:var(--text-light);margin-top:3px;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-generate{background:var(--primary);color:var(--bg-alt);border:none;border-radius:8px;padding:10px 18px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btn-generate:hover{background:var(--primary-light);}
+.btn-generate:disabled{opacity:.5;cursor:not-allowed;}
+.btn-gen-all{background:var(--bg-alt);color:var(--primary);border:1px solid var(--primary);border-radius:8px;padding:10px 18px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btn-gen-all:hover{background:rgba(0,104,179,.08);}
+.tabs{display:flex;gap:2px;margin-bottom:20px;border-bottom:2px solid var(--border-color);}
+.tab{padding:8px 15px;font-size:.79rem;font-weight:500;color:var(--text-light);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.tab:hover{color:var(--text-main);}.tab.active{color:var(--primary);border-bottom-color:var(--primary);}
+.stats-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+.stat-card{background:var(--bg-alt);border:1px solid var(--border-color);border-radius:10px;padding:12px 16px;flex:1;min-width:120px;box-shadow:var(--shadow);}
+.stat-num{font-family:'Playfair Display',serif;font-size:1.7rem;color:var(--primary);}
+.stat-label{font-size:.7rem;color:var(--text-light);margin-top:1px;}
+.roster-card{background:var(--bg-alt);border-radius:12px;box-shadow:var(--shadow);border:1px solid var(--border-color);overflow:hidden;margin-bottom:24px;}
+.roster-card-header{background:var(--primary);color:var(--bg-alt);padding:13px 18px;display:flex;align-items:center;justify-content:space-between;}
+.roster-card-header h2{font-family:'Playfair Display',serif;font-size:1rem;color:white;}
+.roster-card-header span{font-size:.72rem;color:rgba(255,255,255,0.8);}
+.locked-banner{background:#1a2a1a;color:#7fdc9f;font-size:.75rem;padding:6px 18px;border-bottom:1px solid rgba(127,220,159,.2);}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--bg-main);}
+th{font-size:.69rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-light);padding:9px 13px;text-align:left;border-bottom:1px solid var(--border-color);}
+td{padding:9px 13px;font-size:.8rem;border-bottom:1px solid var(--border-color);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tbody tr:nth-child(even) td{background:var(--cream2);}
+tbody tr:hover td{background:rgba(0,104,179,.04);}
+thead{position:sticky;top:0;z-index:1;}
+.duty-name{font-weight:600;color:var(--text-main);}
+.nandi-tag{display:inline-block;background:#fff3d0;color:#9a6e00;font-size:.63rem;font-weight:600;padding:1px 5px;border-radius:4px;margin-left:4px;}
+.youth-tag{display:inline-block;background:#ddeeff;color:#0055aa;font-size:.63rem;font-weight:600;padding:1px 5px;border-radius:4px;}
+.sub-table-header{background:var(--bg-main);font-size:.68rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.07em;padding:6px 13px;border-top:1px solid var(--border-color);border-bottom:1px solid var(--border-color);}
+.name-pill{display:inline-block;background:#e0e0e0;color:var(--text-main);font-size:.75rem;padding:2px 8px;border-radius:20px;margin:2px 2px 2px 0;}
+.empty-cell{color:#bbb;font-style:italic;font-size:.73rem;}
+.manual-edit-dot{display:inline-block;width:5px;height:5px;background:var(--primary);border-radius:50%;margin-right:5px;vertical-align:middle;}
+.btn-sub{background:none;border:1px solid var(--border-color);border-radius:5px;padding:1px 6px;font-size:.65rem;color:var(--text-light);cursor:pointer;margin-left:3px;font-family:'DM Sans',sans-serif;transition:all .15s;vertical-align:middle;}
+.btn-sub:hover{border-color:var(--primary);color:var(--primary);background:rgba(0,104,179,.05);}
+.fairness-section{margin-bottom:24px;}
+.fairness-title{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--text-main);margin-bottom:12px;}
+.fairness-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:8px;}
+.fairness-card{background:var(--bg-alt);border:1px solid var(--border-color);border-radius:8px;padding:9px 12px;cursor:pointer;transition:all .2s;}.fairness-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.fairness-name{font-size:.79rem;font-weight:600;color:var(--text-main);}
+.fairness-count{font-size:.71rem;color:var(--text-light);}
+.fairness-bar-bg{background:var(--bg-main);border-radius:4px;height:4px;margin-top:5px;}
+.fairness-bar-fill{background:var(--primary);border-radius:4px;height:4px;transition:width .4s;}
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:13px;margin-top:4px;}
+.overview-card{background:var(--bg-alt);border:1px solid var(--border-color);border-radius:10px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:all .2s;}
+.overview-card:hover{transform:translateY(-2px);}
+.overview-card-head{background:var(--primary);color:var(--bg-alt);padding:10px 13px;display:flex;justify-content:space-between;align-items:center;}
+.overview-card-head h3{font-family:'Playfair Display',serif;font-size:.87rem;color:white;}
+.overview-card-head span{font-size:.67rem;color:rgba(255,255,255,0.8);}
+.locked-card .overview-card-head{background:#1a2a1a;}
+.overview-card-body{padding:10px 13px;}
+.overview-duty-row{display:flex;justify-content:space-between;font-size:.72rem;padding:3px 0;border-bottom:1px solid rgba(0,0,0,.04);}
+.overview-duty-row:last-child{border-bottom:none;}
+.overview-duty-name{color:var(--text-light);font-weight:500;}
+.overview-duty-names{color:var(--text-main);text-align:right;max-width:58%;}
+.not-generated{padding:18px 13px;text-align:center;color:var(--text-light);font-size:.77rem;font-style:italic;}
+.empty-state{text-align:center;padding:56px 20px;color:var(--text-light);}
+.empty-state .icon{font-size:2.8rem;margin-bottom:10px;}
+.empty-state h3{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--text-main);margin-bottom:6px;}
+.empty-state p{font-size:.82rem;line-height:1.6;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg-alt);border-radius:14px;padding:26px;width:420px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.2);border:1px solid var(--border-color);}
+.modal h2{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--text-main);margin-bottom:16px;}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group label{font-size:.75rem;color:var(--text-light);}
+.form-group input,.form-group select{background:white;border:1px solid var(--border-color);color:var(--text-main);border-radius:6px;padding:7px 9px;font-size:.8rem;font-family:'DM Sans',sans-serif;outline:none;width:100%;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+.btn-cancel{background:var(--bg-alt);border:1px solid var(--border-color);color:var(--text-light);border-radius:7px;padding:8px 16px;font-size:.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-confirm{background:var(--primary);color:var(--bg-alt);border:none;border-radius:7px;padding:8px 16px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-save{background:var(--primary);color:var(--bg-alt);border:1px solid var(--primary);border-radius:8px;padding:10px 18px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.sub-hint{font-size:.75rem;color:var(--text-light);margin-bottom:14px;}
+.sub-row{display:flex;gap:8px;align-items:center;margin-bottom:9px;}
+.sub-row label{font-size:.76rem;color:var(--text-light);min-width:80px;}
+.sub-row select{flex:1;background:white;border:1px solid var(--border-color);border-radius:6px;padding:7px 9px;font-size:.8rem;font-family:'DM Sans',sans-serif;color:var(--text-main);outline:none;}
+@media(max-width:768px){.app{flex-direction:column;}.sidebar{width:100%;}.main{padding:14px;}.modal-grid{grid-template-columns:1fr;}}
+@media print{.sidebar,.btn-row,.btn-sub,.btn-add-event,.btn-gen-all,.btn-reset,.tabs,.modal-overlay{display:none!important;}.app{display:block;}.main{padding:0;}.roster-card{box-shadow:none;border:1px solid #ccc;}}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:10px 20px;border-radius:20px;font-size:.8rem;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;}
+.toast.show{opacity:1;}
+.view-only .btn-sub,.view-only .btn-add-event,.view-only .btn-reset,.view-only .btn-save,.view-only .btn-confirm,.view-only #addEventBtn{display:none!important;}
+.view-only .btn-generate[onclick*="generate"],.view-only .btn-generate[onclick*="unconfirm"]{display:none!important;}
+.historic-icon {
+  display: inline-block;
+  font-size: 0.7em;
+  opacity: 0.6;
+  margin-right: 4px;
+  transform: translateY(-1px);
+}
+</style>
+</head>
+<body>
+<header>
+  <img src="iv-logo.png" alt="IV Logo">
+  <div><h1>IV Team B - Roster Generator</h1><p>Automated duty assignment · Alternate month cycle</p></div>
+</header>
+<div class="app">
+  <div class="sidebar">
+    <div><div class="sidebar-title">Events</div><p style="font-size:.69rem;color:var(--text-light);margin-top:3px;">Select an event to view or generate</p></div>
+    <div id="eventListContainer" class="event-list"></div>
+    <button id="addEventBtn" class="btn-add-event">+ Add Event</button>
+    <button id="resetCycleBtn" class="btn-reset">↺ Reset Next Cycle</button>
+    <div style="margin-top:auto;padding-top:14px;border-top:1px solid var(--border-color);"><div class="sidebar-title" style="margin-bottom:6px;">Members</div><div style="font-size:.72rem;color:var(--text-light);" id="memberSummary"></div></div>
+  </div>
+  <div class="main" id="mainContent">
+    <div class="empty-state"><div class="icon">📋</div><h3>Select an Event to Begin</h3>
+      <p>Choose an event from the sidebar, then click <strong>Generate Roster</strong>,<br>or use <strong>⚡⚡ Generate All</strong> to auto-roster the entire current cycle at once.</p></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addEventModal">
+  <div class="modal">
+    <h2>Add New Event</h2>
+    <div class="modal-grid">
+      <div class="form-group"><label>Event Name</label><input type="text" id="newEventName" placeholder="e.g. Friday Majlis"></div>
+      <div class="form-group"><label>Event Type</label><select id="newEventType"><option value="friday">Friday</option><option value="chandraat">Chandraat</option><option value="baithulkhayal">Baithulkhayal</option><option value="paanch">Paanch Baar Saal</option><option value="student">Student Mijalis</option></select></div>
+      <div class="form-group" style="grid-column:1/-1"><label>Date</label><input type="date" id="newEventDate"></div>
+      <div class="form-group" style="grid-column:1/-1"><label>Congregation planned?</label><select id="newEventCongregation"><option value="no">No</option><option value="yes">Yes</option></select></div>
+      <div class="form-group" style="grid-column:1/-1"><label>Notes (optional)</label><input type="text" id="newEventNotes" placeholder="e.g. Formal Uniform"></div>
+    </div>
+    <div class="modal-actions"><button class="btn-cancel" data-modal-close="addEventModal">Cancel</button><button id="confirmAddEventBtn" class="btn-confirm">Add Event</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="subModal">
+  <div class="modal">
+    <h2>Substitute Member</h2>
+    <p class="sub-hint">Replacing: <strong id="subDutyLabel"></strong></p>
+    <div class="sub-row"><label>Remove</label><select id="subRemoveSelect"></select></div>
+    <div class="sub-row"><label>Replace with</label><select id="subAddSelect"></select></div>
+    <div class="modal-actions"><button class="btn-cancel" data-modal-close="subModal">Cancel</button><button id="confirmSubBtn" class="btn-confirm">Confirm</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+// ══════════════════════════════════════
+// MEMBERS
+// ══════════════════════════════════════
+const MEMBERS = {
+  // Team B active members — Jun-Jul 2026 cycle
+  male:[
+    // Under 12 (Child)
+    {name:"Aly Kotadia",age:10,nandi:false},
+    {name:"Evaan Momin",age:10,nandi:false},
+    {name:"Areez Jivani",age:10,nandi:false},
+    {name:"Azaan Rupani",age:10,nandi:false},
+    {name:"Rishan Pirani",age:10,nandi:false},
+    {name:"Rhys Lakhani",age:10,nandi:false},
+    {name:"Zain Charania",age:10,nandi:false},
+    // Youth (12-17)
+    {name:"Keyaan Harjee",age:14,nandi:false},
+    {name:"Ali Zain Lalwani",age:14,nandi:false},
+    {name:"Aneeq Hasnani",age:14,nandi:false},
+    {name:"Areesh Dinani",age:15,nandi:false},
+    {name:"Arshiyaan Raheem",age:15,nandi:false},
+    {name:"Arhaan Prasla",age:15,nandi:false},
+    {name:"Aleem Merchant",age:15,nandi:false},
+    {name:"Zakiy Khan",age:16,nandi:false},
+    {name:"Ayaan Pirani",age:15,nandi:false},
+    {name:"Ishaan Irfan",age:15,nandi:false},
+    {name:"Eshan Punjwani",age:16,nandi:false},
+    // Adult
+    {name:"Aziz Barolia",age:56,nandi:true},
+    {name:"Rahim Harjee",age:47,nandi:true},
+    {name:"Dilawar Dhanani",age:55,nandi:true},
+    {name:"Faiyaz Peerbhoy",age:45,nandi:true},
+    {name:"Imran Bandeali",age:45,nandi:true},
+    {name:"Rizwan Mithani",age:40,nandi:false},
+    {name:"Rahim Jelani",age:42,nandi:true},
+    {name:"Sajid Abbas",age:43,nandi:true},
+    {name:"Adeel Punjwani",age:40,nandi:false},
+    {name:"Firoz Barolia",age:45,nandi:false},
+    // Senior
+    {name:"Manzoor Ali",age:70,nandi:false},
+  ],
+  female:[
+    // Under 12 (Child)
+    {name:"Ashlyn Surani",age:10,nandi:false},
+    {name:"Dua Kabani",age:10,nandi:false},
+    {name:"Alisa Peerbhai",age:10,nandi:false},
+    {name:"Rifa Raheem",age:10,nandi:false},
+    {name:"Soha Mistry",age:10,nandi:false},
+    {name:"Sheza Shazad",age:10,nandi:false},
+    {name:"Ynez Lakhani",age:10,nandi:false},
+    {name:"Qirat Momin",age:10,nandi:false},
+    {name:"Amyra Samnani",age:10,nandi:false},
+    // Youth (12-17)
+    {name:"Salwa Maredia",age:15,nandi:false},
+    {name:"Aliza Jivani",age:15,nandi:true},
+    {name:"Inaaya Charania",age:14,nandi:false},
+    {name:"Inaaya Sayani",age:14,nandi:false},
+    {name:"Kanza Lalani",age:15,nandi:false},
+    {name:"Khushi Somjee",age:14,nandi:false},
+    {name:"Zahra Nathani",age:14,nandi:false},
+    // Adult
+    {name:"Oshin Kotadia",age:40,nandi:false},
+    {name:"Amreeta Kunwar",age:40,nandi:false},
+    {name:"Angoma Peerbhai",age:40,nandi:true},
+    {name:"Fareesa Lokhandwala",age:40,nandi:true},
+    {name:"Asita Bhimani",age:40,nandi:false},
+    {name:"Mehreen Naveed",age:40,nandi:false},
+    {name:"Minaz Vegdani",age:40,nandi:false},
+    {name:"Kashmira Momin",age:40,nandi:false},
+    {name:"Erum Charolia",age:40,nandi:false},
+    {name:"Saniya Irfan",age:40,nandi:false},
+    {name:"Mehjabeen Samnani",age:40,nandi:false},
+    // Senior
+    {name:"Zarina Jelani",age:72,nandi:false},
+    {name:"Khadija Parmar",age:74,nandi:true},
+    {name:"Roshan Mardani",age:75,nandi:false},
+    {name:"Yasmin Mithani",age:75,nandi:false},
+    {name:"Noorjahan Jivani",age:76,nandi:true},
+  ]
+};
+const TEAM_B_NAMES = new Set([
+  ...MEMBERS.male.map(m=>m.name),
+  ...MEMBERS.female.map(m=>m.name),
+]);
+
+
+// ══════════════════════════════════════
+// DUTY LISTS
+// Chai: Friday & Chandraat ONLY
+// ══════════════════════════════════════
+const HAS_CHAI  = new Set(['friday','chandraat']);
+const CHILD_ALLOWED = new Set(['Prayer Hall Entrance','MPH Hall Entrance','Nandi Passing','Shoe Entrance']);
+
+// Nandi Line & Nandi Passing MUST be last — they absorb all remaining unassigned members.
+const DUTIES = {
+  friday:       ['Nandi Labelling','Number 1','Prayer Hall Entrance','Shoe Entrance','Seating & Discipline','Sukreet','Sukreet & Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Chai Station','Chai Station Pack-up','Nandi Line','Nandi Passing'],
+  chandraat:    ['Nandi Labelling','Number 1','Prayer Hall Entrance','Shoe Entrance','Seating & Discipline','Sukreet','Sukreet & Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Water Station','Chai Station','Chai Station Pack-up','Nandi Line','Nandi Passing'],
+  baithulkhayal:['Nandi Labelling','Number 1','Prayer Hall Entrance','Shoe Entrance','Seating & Discipline','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Nandi Line','Nandi Passing'],
+  paanch:       ['Nandi Labelling','Number 1','Shoe Entrance','Prayer Hall Entrance','Seating & Discipline','Sukreet','Sukreet & Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Nandi Line','Nandi Passing'],
+  student:      ['Nandi Labelling','Number 1','Shoe Entrance','Prayer Hall Entrance','Seating & Discipline','Sukreet','Sukreet & Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Nandi Line','Nandi Passing'],
+  eid:          ['Nandi Labelling','Number 1','Shoe Entrance','Prayer Hall Entrance','Seating & Discipline','Sukreet','Sukreet & Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Nandi Line','Nandi Passing'],
+  navroz:       ['Nandi Labelling','Number 1','Prayer Hall Entrance','Shoe Entrance','Seating & Discipline','Sukreet','Sukreet & Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Water Station','Nandi Line','Nandi Passing'],
+};
+const YOUTH_DUTIES = ['MPH Hall Entrance','Seating & Discipline','Sukreet & Ghatpaat Closing'];
+
+// ══════════════════════════════════════
+
+// ══════════════════════════════════════
+// NO HISTORICAL ROSTERS FOR TEAM B YET
+// ══════════════════════════════════════
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let events=[],selectedEventIdx=null,generatedRosters={};
+let dutyCounts={},prevAssign={},currentTab='event',subContext=null,manualOverrides={},hasUnsavedChanges=new Set();
+let confirmedRosters=new Set();
+
+const isChild=m=>m.age<12, isYouth=m=>m.age>=12&&m.age<18, isAdult=m=>m.age>=18;
+function getGroup(m){return isChild(m)?'child':isYouth(m)?'youth':'adult';}
+
+function formatDateWithDay(dateStr){
+  const date=new Date(dateStr);
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dayName=days[date.getDay()];
+  return dayName+', '+dateStr;
+}
+function startOfDay(d){const x=new Date(d);x.setHours(0,0,0,0);return x;}
+function isBeforeToday(dateStr){
+  const eventDay=startOfDay(new Date(dateStr));
+  const today=startOfDay(new Date());
+  return eventDay<today;
+}
+function hasCongregation(ev){
+  if(typeof ev.congregation==='boolean')return ev.congregation;
+  if(ev.type==='friday'||ev.type==='student')return true;
+  const notes=(ev.notes||'').toLowerCase();
+  return notes.includes('congregation');
+}
+function getEventPeriodKey(ev){
+  const d=new Date(ev.dateRaw||ev.date);
+  if (Number.isNaN(d.getTime())) return 'unknown-period';
+  if (Array.isArray(events) && events.length) {
+    const sortedEvents = [...events]
+      .map(e => ({ event: e, date: startOfDay(new Date(e.dateRaw || e.date)) }))
+      .filter(e => !Number.isNaN(e.date.getTime()))
+      .sort((a, b) => a.date - b.date);
+    let cycleStart = null;
+    for (const item of sortedEvents) {
+      if (item.date <= startOfDay(d) && item.event.type === 'chandraat') cycleStart = item.date;
+    }
+    if (cycleStart) {
+      return `duty-cycle-${cycleStart.getFullYear()}-${String(cycleStart.getMonth()+1).padStart(2,'0')}-${String(cycleStart.getDate()).padStart(2,'0')}`;
+    }
+  }
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+const REPEAT_ALLOWED_DUTIES=new Set(['Nandi Line','Nandi Passing','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution']);
+const HARD_REQUIRED_DUTIES=new Set(['Nandi']);
+
+const DUTY_ASSIGNMENT_CONFIG = {
+  'Nandi Labelling': (type, members, pick) => {
+    const { mA, mY, fA, fY } = members;
+    if (Math.random() < 0.5 && fY.length) {
+      return { male: [], female: [...pick(fA, 1, 'Nandi Labelling', true), ...pick(fY, 1, 'Nandi Labelling', true, true)] };
+    }
+    if (Math.random() < 0.5 && mA.length && fY.length) {
+      return { male: pick(mA, 1, 'Nandi Labelling', true), female: pick(fY, 1, 'Nandi Labelling', true, true) };
+    }
+    if (mY.length && fA.length) {
+      return { male: pick(mY, 1, 'Nandi Labelling', true, true), female: pick(fA, 1, 'Nandi Labelling', true) };
+    }
+    return { male: [], female: [...pick(fA, 1, 'Nandi Labelling', true), ...pick(fY, 1, 'Nandi Labelling', true, true)] };
+  },
+  'Number 1': (type, members, pick) => ({ male: pick([...members.mA, ...members.mY], 1, 'Number 1'), female: pick([...members.fA, ...members.fY], 1, 'Number 1') }),
+  'Prayer Hall Entrance': (type, members, pick) => ({ male: pick(members.mC.length >= 2 ? members.mC : [...members.mC, ...members.mY], 2, 'Prayer Hall Entrance'), female: pick(members.fC.length >= 2 ? members.fC : [...members.fC, ...members.fY], 2, 'Prayer Hall Entrance') }),
+  'Shoe Entrance': (type, members, pick) => ({ male: pick(members.mY.length ? members.mY : [...members.mY, ...members.mA], 1, 'Shoe Entrance'), female: pick(members.fY.length ? members.fY : [...members.fY, ...members.fA], 1, 'Shoe Entrance') }),
+  'Seating & Discipline': (type, members, pick) => ({ male: [...pick(members.mA, 1, 'Seating & Discipline'), ...pick(members.mY, 1, 'Seating & Discipline')].filter(Boolean), female: [...pick(members.fA, 1, 'Seating & Discipline'), ...pick(members.fY, 1, 'Seating & Discipline')].filter(Boolean) }),
+  'Sukreet': (type, members, pick) => ({ male: members.mY.length && Math.random() < 0.6 ? [...pick(members.mA, 1, 'Sukreet'), ...pick(members.mY, 1, 'Sukreet')].filter(Boolean) : pick(members.mA, 2, 'Sukreet'), female: members.fY.length && Math.random() < 0.6 ? [...pick(members.fA, 1, 'Sukreet'), ...pick(members.fY, 1, 'Sukreet')].filter(Boolean) : pick(members.fA, 2, 'Sukreet') }),
+  'Sukreet & Ghatpaat Closing': (type, members, pick) => ({ male: pick(members.mY.length ? members.mY : members.mA, 1, 'Sukreet & Ghatpaat Closing'), female: pick(members.fY.length ? members.fY : members.fA, 1, 'Sukreet & Ghatpaat Closing') }),
+  'Safety Exit Door/Discipline': (type, members, pick) => ({ male: [], female: Math.random() < 0.5 && members.fY.length ? [...pick(members.fA, 1, 'Safety Exit Door/Discipline'), ...pick(members.fY, 1, 'Safety Exit Door/Discipline')].filter(Boolean) : pick(members.fA, 1, 'Safety Exit Door/Discipline') }),
+  'Nandi': (type, members, pick) => { const c = Math.floor(Math.random() * 3); if (c === 0 && members.mN.length >= 2) return { male: pick(members.mN, 2, 'Nandi'), female: [] }; if (c === 1 && members.fN.length >= 2) return { male: [], female: pick(members.fN, 2, 'Nandi') }; return { male: pick(members.mN, 1, 'Nandi'), female: pick(members.fN, 1, 'Nandi') }; },
+  'Nandi Set-up': (type, members, pick) => ({ male: pick([...members.mA, ...members.mY], 1, 'Nandi Set-up'), female: pick([...members.fA, ...members.fY], 1, 'Nandi Set-up') }),
+  'Nandi Centre': (type, members, pick) => (Math.random() < 0.5 ? { male: pick([...members.mA, ...members.mY], 1, 'Nandi Centre'), female: [] } : { male: [], female: pick([...members.fA, ...members.fY], 1, 'Nandi Centre') }),
+  'Nandi Trolley': (type, members, pick) => (Math.random() < 0.5 ? { male: pick([...members.mA, ...members.mY], 1, 'Nandi Trolley'), female: [] } : { male: [], female: pick([...members.fA, ...members.fY], 1, 'Nandi Trolley') }),
+  'Nandi Line': (type, members, pick) => { const umA=members.mA.filter(m=>!members.used.has(m.name)),ufA=members.fA.filter(m=>!members.used.has(m.name)),umY=members.mY.filter(m=>!members.used.has(m.name)),ufY=members.fY.filter(m=>!members.used.has(m.name)); const malePool=[...umA,...umY,...members.mA,...members.mY].filter((m,i,a)=>a.findIndex(x=>x.name===m.name)===i); const femalePool=[...ufA,...ufY,...members.fA,...members.fY].filter((m,i,a)=>a.findIndex(x=>x.name===m.name)===i); return { male:pick(malePool,Math.min(Math.max(4,umA.length+Math.min(umY.length,2)),10),'Nandi Line'), female:pick(femalePool,Math.min(Math.max(4,ufA.length+Math.min(ufY.length,2)),10),'Nandi Line') }; },
+  'Nandi Passing': (type, members, pick) => { const ucM=members.mC.filter(m=>!members.used.has(m.name)),ucF=members.fC.filter(m=>!members.used.has(m.name)),uyM=members.mY.filter(m=>!members.used.has(m.name)),uyF=members.fY.filter(m=>!members.used.has(m.name)); const malePool=[...ucM,...uyM,...members.mC,...members.mY,...members.mA].filter((m,i,a)=>a.findIndex(x=>x.name===m.name)===i); const femalePool=[...ucF,...uyF,...members.fC,...members.fY,...members.fA].filter((m,i,a)=>a.findIndex(x=>x.name===m.name)===i); return { male:pick(malePool,Math.min(Math.max(3,ucM.length+Math.min(uyM.length,1)),8),'Nandi Passing'), female:pick(femalePool,Math.min(Math.max(3,ucF.length+Math.min(uyF.length,1)),8),'Nandi Passing') }; },
+  'Nandi Distribution': (type, members, pick) => ({ male:[pick(members.mA,1,'Nandi Distribution')[0]||pick(members.mY,1,'Nandi Distribution')[0]].filter(Boolean), female:pick([...members.fA,...members.fY],1,'Nandi Distribution') }),
+  'Chai Station': (type, members, pick) => ({ male: pick(members.mA, Math.random() < 0.5 ? 1 : 2, 'Chai Station'), female: pick(members.fA, Math.random() < 0.5 ? 0 : 1, 'Chai Station') }),
+  'Water Station': (type, members, pick) => ({ male: pick([...members.mA, ...members.mY], 1, 'Water Station'), female: pick([...members.fA, ...members.fY], 1, 'Water Station') }),
+  'Chai Station Pack-up': (type, members, pick) => { const male=pick(members.mA,1,'Chai Station Pack-up',true,true); const youth=Math.random()<0.5?pick(members.mY,1,'Chai Station Pack-up',true,true):[]; const femaleYouth=youth.length?[]:pick(members.fY,1,'Chai Station Pack-up',true,true); return {male:[...male,...youth],female:femaleYouth}; },
+};
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+function init() {
+  setupEvents();
+  if (!loadState()) { resetCycle(true); }
+  recalculateCountsFromState();
+  updateMemberSummary();
+  renderEventList();
+  document.getElementById('addEventBtn').addEventListener('click', openAddEventModal);
+  document.getElementById('resetCycleBtn').addEventListener('click', () => resetCycle(false));
+  document.getElementById('confirmAddEventBtn').addEventListener('click', addEvent);
+  document.getElementById('confirmSubBtn').addEventListener('click', confirmSubstitute);
+  document.querySelectorAll('[data-modal-close]').forEach(btn => {
+    btn.addEventListener('click', () => closeModal(btn.dataset.modalClose));
+  });
+  selectedEventIdx = events.findIndex(e => !e.locked);
+  if (selectedEventIdx === -1) selectedEventIdx = 0;
+  currentTab = 'event';
+  renderMainForEvent(selectedEventIdx);
+}
+function resetCounts(){dutyCounts={};prevAssign={};[...MEMBERS.male,...MEMBERS.female].forEach(m=>dutyCounts[m.name]=0);}
+function recalculateCountsFromState() {
+  resetCounts();
+  Object.keys(generatedRosters).forEach(eventId => {
+    const roster = generatedRosters[eventId];
+    const event = events.find(e => e.id === eventId);
+    if (!roster || !event) return;
+    const period = getEventPeriodKey(event);
+    roster.forEach(row => {
+      [...row.male, ...row.female].forEach(name => {
+        dutyCounts[name] = (dutyCounts[name] || 0) + 1;
+        if (!prevAssign[name]) prevAssign[name] = [];
+        prevAssign[name].push({ duty: row.duty, ev: eventId, period });
+      });
+    });
+  });
+}
+function sanitizeRosterRows(rows){
+  const used=new Set();
+  return rows.map(r=>{
+    const male=(r.male||[]).filter(n=>TEAM_B_NAMES.has(n)&&!used.has(n));
+    male.forEach(n=>used.add(n));
+    const female=(r.female||[]).filter(n=>TEAM_B_NAMES.has(n)&&!used.has(n));
+    female.forEach(n=>used.add(n));
+    return {...r,male,female};
+  });
+}
+function seedMarch(){ /* No historical data for Team B yet */ }
+function setupEvents(){
+  // Team B Cycle 2: Feb 17 – Mar 18
+  const cycle2=[
+    {id:'c2e1',name:'Chandraat',type:'chandraat',dateRaw:'2026-02-17',notes:'Formal Uniform',congregation:true},
+    {id:'c2e2',name:'Baithulkhayal',type:'baithulkhayal',dateRaw:'2026-02-21',notes:'Casual Uniform'},
+    {id:'c2e3',name:'Paanch Baar Saal',type:'paanch',dateRaw:'2026-02-25',notes:'Casual Uniform'},
+    {id:'c2e4',name:'Student Mijalis',type:'student',dateRaw:'2026-02-28',notes:'Casual Uniform',congregation:true},
+    {id:'c2e5',name:'Imamat Day',type:'eid',dateRaw:'2026-03-04',notes:'Formal Uniform'},
+  ];
+  // Team B Cycle 4: Apr 17 – May 16 (Historical)
+  const cycle4=[
+    {id:'m1',name:'Chandraat Beej',type:'chandraat',dateRaw:'2026-04-17',notes:'Formal Uniform'},
+    {id:'m2',name:'Baithulkhayal',type:'baithulkhayal',dateRaw:'2026-04-18',notes:'Casual Uniform'},
+    {id:'m3',name:'Friday Majlis',type:'friday',dateRaw:'2026-04-24',notes:'Casual Uniform'},
+    {id:'m4',name:'Paanch Baar Saal',type:'paanch',dateRaw:'2026-04-25',notes:'Casual Uniform'},
+    {id:'m5',name:'Friday Majlis',type:'friday',dateRaw:'2026-05-01',notes:'Casual Uniform'},
+    {id:'m6',name:'Student Mijalis',type:'student',dateRaw:'2026-05-02',notes:'Casual Uniform',congregation:true},
+    {id:'m7',name:'Friday Majlis',type:'friday',dateRaw:'2026-05-08',notes:'Casual Uniform'},
+    {id:'m8',name:'Friday Majlis',type:'friday',dateRaw:'2026-05-15',notes:'Casual Uniform'},
+  ];
+  // Team B Cycle 6: Jun 15 – Jul 13 (Current)
+  const cycle6=[
+    {id:'e1',name:'Chandraat',type:'chandraat',dateRaw:'2026-06-15',notes:'Formal Uniform'},
+    {id:'e2',name:'Friday Majlis',type:'friday',dateRaw:'2026-06-19',notes:'Casual Uniform'},
+    {id:'e3',name:'Baithulkhayal',type:'baithulkhayal',dateRaw:'2026-06-20',notes:'Casual Uniform'},
+    {id:'e4',name:'Paanch Baar Saal',type:'paanch',dateRaw:'2026-06-23',notes:'Casual Uniform'},
+    {id:'e5',name:'Friday Majlis',type:'friday',dateRaw:'2026-06-26',notes:'Casual Uniform'},
+    {id:'e6',name:'Student Mijalis',type:'student',dateRaw:'2026-06-27',notes:'Casual Uniform',congregation:true},
+    {id:'e7',name:'Friday Majlis',type:'friday',dateRaw:'2026-07-03',notes:'Casual Uniform'},
+    {id:'e8',name:'Friday Majlis',type:'friday',dateRaw:'2026-07-10',notes:'Casual Uniform'},
+  ];
+  // Team B Cycle 8: Aug 13 – Sep 10
+  const cycle8=[
+    {id:'i1',name:'Chandraat',type:'chandraat',dateRaw:'2026-08-13',notes:'Formal Uniform'},
+    {id:'i2',name:'Baithulkhayal',type:'baithulkhayal',dateRaw:'2026-08-15',notes:'Casual Uniform'},
+    {id:'i3',name:'Paanch Baar Saal',type:'paanch',dateRaw:'2026-08-21',notes:'Casual Uniform'},
+    {id:'i4',name:'Student Mijalis',type:'student',dateRaw:'2026-08-22',notes:'Casual Uniform',congregation:true},
+    {id:'i5',name:'Milad al-Nabi',type:'eid',dateRaw:'2026-08-24',notes:'Formal Uniform'},
+    {id:'i6',name:'Friday Majlis',type:'friday',dateRaw:'2026-08-28',notes:'Casual Uniform'},
+    {id:'i7',name:'Friday Majlis',type:'friday',dateRaw:'2026-09-04',notes:'Casual Uniform'},
+  ];
+  // Team B Cycle 10: Oct 11 – Nov 9
+  const cycle10=[
+    {id:'j1',name:'Chandraat',type:'chandraat',dateRaw:'2026-10-11',notes:'Formal Uniform',congregation:true},
+    {id:'j2',name:'Salgirah',type:'eid',dateRaw:'2026-10-12',notes:'Formal Uniform'},
+    {id:'j3',name:'Baithulkhayal',type:'baithulkhayal',dateRaw:'2026-10-17',notes:'Casual Uniform'},
+    {id:'j4',name:'Paanch Baar Saal',type:'paanch',dateRaw:'2026-10-19',notes:'Casual Uniform'},
+    {id:'j5',name:'Friday Majlis',type:'friday',dateRaw:'2026-10-23',notes:'Casual Uniform'},
+    {id:'j6',name:'Student Mijalis',type:'student',dateRaw:'2026-10-24',notes:'Casual Uniform',congregation:true},
+    {id:'j7',name:'Friday Majlis',type:'friday',dateRaw:'2026-10-30',notes:'Casual Uniform'},
+    {id:'j8',name:'Friday Majlis',type:'friday',dateRaw:'2026-11-06',notes:'Casual Uniform'},
+  ];
+  // Team B Cycle 12: Dec 9 – Jan 2027
+  const cycle12=[
+    {id:'k1',name:'Chandraat',type:'chandraat',dateRaw:'2026-12-09',notes:'Formal Uniform'},
+    {id:'k2',name:'Friday Majlis',type:'friday',dateRaw:'2026-12-11',notes:'Casual Uniform'},
+    {id:'k3',name:'Baithulkhayal',type:'baithulkhayal',dateRaw:'2026-12-12',notes:'Casual Uniform'},
+    {id:'k4',name:'Paanch Baar Saal',type:'paanch',dateRaw:'2026-12-17',notes:'Casual Uniform'},
+    {id:'k5',name:'Friday Majlis',type:'friday',dateRaw:'2026-12-18',notes:'Casual Uniform'},
+    {id:'k6',name:'Student Mijalis',type:'student',dateRaw:'2026-12-19',notes:'Casual Uniform',congregation:true},
+    {id:'k7',name:'Yawm-i Ali',type:'eid',dateRaw:'2026-12-21',notes:'Formal Uniform'},
+    {id:'k8',name:'Friday Majlis',type:'friday',dateRaw:'2026-12-25',notes:'Casual Uniform'},
+  ];
+
+  const allEvents = [...cycle2, ...cycle4, ...cycle6, ...cycle8, ...cycle10, ...cycle12];
+  events=allEvents.map(ev=>({
+    ...ev,
+    date:formatDateWithDay(ev.dateRaw),
+    locked: isBeforeToday(ev.dateRaw),
+  }));
+}
+function updateMemberSummary(){
+  const am=MEMBERS.male.filter(x=>!x.inactive).length,af=MEMBERS.female.filter(x=>!x.inactive).length;
+  const nm=MEMBERS.male.filter(x=>x.nandi&&!x.inactive).length,nf=MEMBERS.female.filter(x=>x.nandi&&!x.inactive).length;
+  document.getElementById('memberSummary').innerHTML=`${am} Male · ${af} Female (active)<br>${nm+nf} Nandi experienced`;
+}
+
+// ══════════════════════════════════════
+// EVENT LIST
+// ══════════════════════════════════════
+const TYPE_LABELS={friday:'Friday',chandraat:'Chandraat',baithulkhayal:'Baithulkhayal',paanch:'Paanch Baar',student:'Student',eid:'Eid',navroz:'Navroz'};
+function getEventTypeLabel(ev){ if(ev.type==='eid')return ev.name||'Eid'; return TYPE_LABELS[ev.type]||ev.type; }
+
+function renderEventList(){
+  const el=document.getElementById('eventListContainer');
+  el.innerHTML='';
+  const TYPE_BADGE={friday:'badge-friday',chandraat:'badge-chandraat',baithulkhayal:'badge-baithulkhayal',paanch:'badge-paanch',student:'badge-student',eid:'badge-paanch',navroz:'badge-baithulkhayal'};
+  function renderGroup(label,evs,expanded){
+    if(!evs.length)return;
+    const gid='grp_'+label.replace(/[^a-z0-9]/gi,'_');
+    const disp=expanded?'':'none';
+    const arrow=expanded?'▼':'▶';
+    let groupHTML = `<div class="sidebar-title" style="margin-top:8px;margin-bottom:3px;font-size:.67rem;cursor:pointer;" onclick="var el=document.getElementById('${gid}');el.style.display=el.style.display==='none'?'':'none';this.querySelector('.arrow').textContent=el.style.display==='none'?'\u25b6':'\u25bc'"><span class="arrow">${arrow}</span> ${label}</div><div id="${gid}" style="display:${disp}">`;
+    evs.forEach((ev, index) => {
+      const i = events.indexOf(ev);
+      const done=generatedRosters[ev.id]?'✓ ':'';
+      const manual = ev.manualEntry ? '✍️ ' : '';
+      groupHTML+=`<div class="event-item ${selectedEventIdx===i?'active':''}" onclick="selectEvent(${i})" style="${ev.locked?'opacity:.9;':''}">
+        <div class="event-item-left">
+          <span class="event-item-name">${manual}${ev.locked?'<span class="historic-icon">🔒</span>':''}${done}${ev.name}</span>
+          <span class="event-item-date">${ev.date}${ev.notes?' · '+ev.notes:''}</span>
+        </div>
+        <span class="event-badge ${TYPE_BADGE[ev.type]}">${getEventTypeLabel(ev)}</span>
+      </div>`;
+    });
+    groupHTML+='</div>';
+    el.innerHTML += groupHTML; 
+  }
+  // Determine current cycle period
+  const selEv=selectedEventIdx!==null?events[selectedEventIdx]:null;
+  const currentPeriod=selEv?getEventPeriodKey(selEv):null;
+  // Group events by cycle (each cycle starts with a chandraat event)
+  const locked=events.filter(e=>e.locked);
+  const upcoming=events.filter(e=>!e.locked);
+  const lockedCycles=[];
+  locked.forEach(ev=>{
+    if(ev.type==='chandraat'||lockedCycles.length===0) lockedCycles.push([]);
+    lockedCycles[lockedCycles.length-1].push(ev);
+  });
+  lockedCycles.forEach(cycle=>{
+    const first=cycle[0],last=cycle[cycle.length-1];
+    const label=`Historic Cycle (${new Date(first.dateRaw).toLocaleDateString('en-US',{month:'short'})}–${new Date(last.dateRaw).toLocaleDateString('en-US',{month:'short',year:'numeric'})})`;
+    const isCurrent=currentPeriod&&cycle.some(e=>getEventPeriodKey(e)===currentPeriod);
+    renderGroup(label,cycle,isCurrent);
+  });
+  const upcomingCycles=[];
+  upcoming.forEach(ev=>{
+    if(ev.type==='chandraat'||upcomingCycles.length===0) upcomingCycles.push([]);
+    upcomingCycles[upcomingCycles.length-1].push(ev);
+  });
+  upcomingCycles.forEach((cycle,idx)=>{
+    const first=cycle[0],last=cycle[cycle.length-1];
+    const label=`Upcoming Cycle (${new Date(first.dateRaw).toLocaleDateString('en-US',{month:'short'})}–${new Date(last.dateRaw).toLocaleDateString('en-US',{month:'short',year:'numeric'})})`;
+    const isCurrent=currentPeriod?cycle.some(e=>getEventPeriodKey(e)===currentPeriod):idx===0;
+    renderGroup(label,cycle,isCurrent);
+  });
+}
+
+function selectEvent(i){selectedEventIdx=i;currentTab='event';renderEventList();renderMainForEvent(i);}
+function switchTab(t,i){currentTab=t;renderMainForEvent(i);}
+
+// ══════════════════════════════════════
+// MAIN VIEW
+// ══════════════════════════════════════
+function renderMainForEvent(i){
+  const ev=events[i],hasRoster=!!generatedRosters[ev.id];
+  const manual = ev.manualEntry ? '✍️ ' : '';
+  document.getElementById('mainContent').innerHTML=`
+    <div class="main-header">
+      <div><div class="main-title">${manual}${ev.name}</div><div class="main-sub">${ev.date} · ${ev.notes||''}</div></div>
+      <div class="btn-row">
+        ${hasUnsavedChanges.has(ev.id)?`<button class="btn-save" onclick="saveChanges(${i})">💾 Save Changes</button>`:''}
+        <button class="btn-generate" onclick="${confirmedRosters.has(ev.id)?`unconfirmRoster(${i})`:`generateRoster(${i})`}" ${ev.locked&&!confirmedRosters.has(ev.id)?'disabled':''} id="genBtn_${i}">
+          ${confirmedRosters.has(ev.id)?'↩ Unconfirm':ev.locked?'🔒 Historical':generatedRosters[ev.id]?'↺ Regenerate':'⚡ Generate'}
+        </button>
+        ${generatedRosters[ev.id]&&!confirmedRosters.has(ev.id)?`<button class="btn-confirm" onclick="confirmRoster(${i})" style="background:var(--gold);color:var(--deep);border:none;border-radius:8px;padding:10px 18px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;">✓ Confirm</button>`:''}
+        ${generatedRosters[ev.id]?`<button class="btn-generate" onclick="exportRosterImage(${i})" style="background:var(--bg-alt);color:var(--primary);border:1px solid var(--primary);">📷 Export</button><button class="btn-generate" onclick="copyRosterTable(${i})" style="background:var(--bg-alt);color:var(--primary);border:1px solid var(--primary);">📋 Copy</button>`:''}
+      </div>
+      ${ev.type==='friday'&&!ev.locked?`<div style="margin-top:8px;font-size:.75rem;"><button onclick="toggleCongregation(${i},${!hasCongregation(ev)})" style="background:${hasCongregation(ev)?'#0068b3':'#ccc'};color:#fff;border:none;border-radius:12px;padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Youth Congregation: ${hasCongregation(ev)?'ON':'OFF'}</button></div>`:''}
+    </div>
+    <div class="tabs">
+      <button class="tab ${currentTab==='event'?'active':''}" onclick="switchTab('event',${i})">This Event</button>
+      <button class="tab ${currentTab==='overview'?'active':''}" onclick="switchTab('overview',${i})">Cycle Overview</button>
+      <button class="tab ${currentTab==='fairness'?'active':''}" onclick="switchTab('fairness',${i})">Fairness</button>
+      <button class="tab ${currentTab==='members'?'active':''}" onclick="switchTab('members',${i})">Members</button>
+    </div>
+    <div id="tabContent"></div>`;
+
+  const tc=document.getElementById('tabContent');
+  if(currentTab==='event'){
+    if(hasRoster){
+      tc.innerHTML=renderRosterHTML(ev,generatedRosters[ev.id],i);
+      renderStatsHTML(ev);
+    } else {
+      tc.innerHTML=`<div class="empty-state"><div class="icon">⚡</div><h3>Ready to Generate</h3>
+        <p>Click <strong>Generate</strong> for this event, or <strong>⚡⚡ Generate All</strong> to roster the entire current cycle.<br><br>
+        Rules: fairness across all members · no repeat of major duties · group eligibility (child/youth/adult).</p></div>`;
+    }
+  } else if (currentTab === 'overview') {
+    const period = getEventPeriodKey(events[i]);
+    const cycleEvents = events.filter(e => getEventPeriodKey(e) === period);
+    const first = cycleEvents[0], last = cycleEvents[cycleEvents.length-1];
+    const title = new Date(first.dateRaw).toLocaleDateString('en-US',{month:'short'})+'\u2013'+new Date(last.dateRaw).toLocaleDateString('en-US',{month:'short',year:'numeric'})+' \u2014 Cycle Summary';
+    const subtitle = events[i].locked ? 'Historical cycle assignments.' : 'Assignments for the current cycle.';
+    tc.innerHTML = renderCycleSummaryHTML(cycleEvents, title, subtitle);
+
+
+
+
+
+  } else if(currentTab==='fairness'){
+    tc.innerHTML=renderFairnessHTML();
+  } else {
+    tc.innerHTML=renderMembersHTML();
+  }
+}
+
+// ══════════════════════════════════════
+// GENERATION
+// ══════════════════════════════════════
+function generateAllRosters(){
+  // Generate for the cycle containing the selected event
+  const ev=selectedEventIdx!==null?events[selectedEventIdx]:events.find(e=>!e.locked)||events[0];
+  if(!ev){showToast('No event selected.');return;}
+  // Group into chandraat-based cycles
+  const allSorted=[...events].sort((a,b)=>new Date(a.dateRaw)-new Date(b.dateRaw));
+  const cycles=[];
+  allSorted.forEach(e=>{
+    if(e.type==='chandraat'||cycles.length===0) cycles.push([]);
+    cycles[cycles.length-1].push(e);
+  });
+  let cycleEvents=[];
+  for(const c of cycles){if(c.some(e=>e.id===ev.id)){cycleEvents=c;break;}}
+  if(!cycleEvents.length){showToast('No events in this cycle.');return;}
+  // Generate rosters for all events in cycle that don't have one yet
+  const toGenerate=cycleEvents.filter(ce=>!generatedRosters[ce.id]);
+  if(!toGenerate.length){showToast('All '+cycleEvents.length+' rosters already generated. Use Export Excel.');}
+  toGenerate.forEach(ce=>{
+    generatedRosters[ce.id]=_generateRosterLogic(ce);
+  });
+  saveState();
+  showToast(`Generated ${toGenerate.length} rosters (${cycleEvents.length} total in cycle) \u2713`);
+  if(selectedEventIdx===null)selectedEventIdx=events.indexOf(cycleEvents[0]);
+  currentTab='overview';
+  renderEventList();
+  renderMainForEvent(selectedEventIdx);
+}
+
+
+function _generateRosterLogic(ev) {
+  const type = ev.type;
+  // Default to Paanch duties for any unknown types.
+  const dutyList = (DUTIES[type] || DUTIES.paanch).filter(d => !(d === 'Chai Station' && !HAS_CHAI.has(type)));
+
+  const isActive=m=>!m.inactive;
+  const mA = MEMBERS.male.filter(m=>isAdult(m)&&isActive(m)), mY = MEMBERS.male.filter(m=>isYouth(m)&&isActive(m)), mC = MEMBERS.male.filter(m=>isChild(m)&&isActive(m));
+  const fA = MEMBERS.female.filter(m=>isAdult(m)&&isActive(m)), fY = MEMBERS.female.filter(m=>isYouth(m)&&isActive(m)), fC = MEMBERS.female.filter(m=>isChild(m)&&isActive(m));
+  const mN = mA.filter(m => m.nandi), fN = fA.filter(m => m.nandi);
+  const period = getEventPeriodKey(ev);
+
+  const used = new Set(), roster = [];
+
+  function pick(pool, count, duty, allowFallback = false, ignoreUsed = false) {
+    if (count <= 0 || !pool.length) return [];
+    const baseAvailable = ignoreUsed ? pool : pool.filter(m => !used.has(m.name));
+    const available = baseAvailable.filter(m => {
+      if (REPEAT_ALLOWED_DUTIES.has(duty)) return true;
+      const hist = prevAssign[m.name] || [];
+      return !hist.some(x => x.duty === duty && x.period === period && x.ev !== ev.id);
+    });
+    const finalPool = available.length ? available : ((allowFallback || HARD_REQUIRED_DUTIES.has(duty)) ? baseAvailable : available);
+    // Hard-required duties or explicit fallback requests ignore same-month repeat exclusions when no eligible candidate remains.
+    if (!finalPool.length) return [];
+    const had = new Set(Object.entries(prevAssign).filter(([, h]) => h.some(x => x.duty === duty && x.ev !== ev.id)).map(([n]) => n));
+    return [...finalPool].sort((a, b) => {
+      const ah = had.has(a.name) ? 1 : 0, bh = had.has(b.name) ? 1 : 0;
+      if (ah !== bh) return ah - bh;
+      return ((dutyCounts[a.name] || 0) - (dutyCounts[b.name] || 0)) || (Math.random() - .5);
+    }).slice(0, count).map(m => m.name);
+  }
+
+  function row(duty, mNames, fNames, section = 'adults') {
+    [...mNames, ...fNames].forEach(n => {
+      dutyCounts[n] = (dutyCounts[n] || 0) + 1;
+      if (!prevAssign[n]) prevAssign[n] = [];
+      prevAssign[n].push({ duty, ev: ev.id, period });
+      used.add(n);
+    });
+    roster.push({ duty, male: mNames, female: fNames, isNandi: duty === 'Nandi', section });
+  }
+
+  for (const d of dutyList) {
+    const assigner = DUTY_ASSIGNMENT_CONFIG[d];
+    if (assigner) {
+      const assignments = assigner(type, { mA, mY, mC, mN, fA, fY, fC, fN, used }, pick);
+      row(d, assignments.male, assignments.female, 'adults');
+    } else {
+      console.warn(`No assignment logic found for duty: ${d}`);
+    }
+  }
+
+  if (hasCongregation(ev)) {
+    for (const d of YOUTH_DUTIES) {
+      let mN2 = [], fN2 = [];
+      if (d === 'MPH Hall Entrance') { mN2 = pick(mC.length ? mC : mY, 1, d, true, true); fN2 = pick(fC.length ? fC : fY, 1, d, true, true); }
+      else if (d === 'Seating & Discipline') { mN2 = pick(mY, 1, d, true, true); fN2 = pick(fY, 1, d, true, true); }
+      else if (d === 'Sukreet & Ghatpaat Closing') { mN2 = pick([...mY, ...mC.filter(m=>m.age>=8)], 2, d, true, true); fN2 = pick([...fY, ...fC.filter(m=>m.age>=8)], 2, d, true, true); }
+      row(d, mN2, fN2, 'youth');
+    }
+  }
+  return roster;
+}
+
+function generateRoster(i) {
+  const ev = events[i];
+  if (ev.locked && confirmedRosters.has(ev.id)) { showToast('This roster is confirmed and locked.'); return; }
+
+  if (generatedRosters[ev.id] && !ev.locked) {
+    if (!confirm('Are you sure you want to regenerate this roster? Any manual changes will be lost.')) return;
+    hasUnsavedChanges.delete(ev.id);
+  }
+  if (manualOverrides[ev.id]) delete manualOverrides[ev.id];
+
+  generatedRosters[ev.id] = _generateRosterLogic(ev);
+  renderEventList();
+  saveState();
+  renderMainForEvent(i);
+  showToast('Roster generated ✓');
+  setTimeout(()=>{const c=document.querySelector('.roster-card');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},100);
+}
+
+// ══════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════
+function renderRosterHTML(ev,roster,evIdx){
+  const adults=roster.filter(r=>r.section==='adults'),youth=roster.filter(r=>r.section==='youth');
+  let h='<div class="roster-card">';
+  h+=`<div class="roster-card-header"><h2>${ev.name} — ${ev.date}</h2><span>${ev.notes||''}</span></div>`;
+  if(ev.locked)h+=`<div class="locked-banner">🔒 Historical roster — use ↔ to make manual substitutions if needed.</div>`;
+  h+='<table><thead><tr><th>Duty</th><th>Male</th><th>Female</th></tr></thead><tbody>';
+  function sec(rows){rows.forEach(r=>{const ri=roster.indexOf(r);h+=`<tr>
+    <td><span class="duty-name">${r.duty}</span></td>
+    <td>${namesWithSub(r.male,'male',ri,evIdx)}</td>
+    <td>${namesWithSub(r.female,'female',ri,evIdx)}</td>
+  </tr>`;});}
+  if(adults.length){h+='<tr><td colspan="3" class="sub-table-header">Adults</td></tr>';sec(adults);}
+  if(youth.length){h+='<tr><td colspan="3" class="sub-table-header"><span class="youth-tag">Youth</span></td></tr>';sec(youth);}
+  return h+'</tbody></table></div>';
+
+  function namesWithSub(names,gender,ri,evIdx){
+    const add=`<button class="btn-sub" onclick="openSubModal(${evIdx},${ri},'${gender}',null)">+ Add</button>`;
+    const isOverridden = (name) => manualOverrides[events[evIdx].id]?.[ri]?.[gender]?.[name];
+    if(!names||!names.length)return`<span class="empty-cell">—</span>${add}`;
+    return names.map(n=>`<span class="name-pill">${isOverridden(n) ? '<span class="manual-edit-dot"></span>' : ''}${n}</span><button class="btn-sub" onclick="openSubModal(${evIdx},${ri},'${gender}','${n.replace(/'/g,"\\'")}')">↔</button>`).join('')+add;
+  }
+}
+function renderStatsHTML(ev){
+  const main=document.getElementById('tabContent');
+  const assigned=(generatedRosters[ev.id]||[]).flatMap(r=>[...r.male,...r.female]).length;
+  const done=Object.keys(generatedRosters).filter(id=>!events.find(e=>e.id===id&&e.locked)).length;
+  const s=`<div class="stats-row">
+    <div class="stat-card"><div class="stat-num">${assigned}</div><div class="stat-label">Assignments this event</div></div>
+    <div class="stat-card"><div class="stat-num">${done}</div><div class="stat-label">Events generated</div></div>
+    <div class="stat-card"><div class="stat-num">${MEMBERS.male.length+MEMBERS.female.length}</div><div class="stat-label">Active members</div></div>
+  </div>`;
+  main.innerHTML=s+main.innerHTML;
+}
+
+function renderMembersHTML(){
+  const activeM=MEMBERS.male.filter(m=>!m.inactive).length, activeF=MEMBERS.female.filter(m=>!m.inactive).length;
+  function renderTable(members,gender){
+    let h='<table><thead><tr><th>Active</th><th>Name</th><th>Group</th><th>Nandi</th><th>Note</th></tr></thead><tbody>';
+    members.forEach((m,idx)=>{
+      const rowStyle=m.inactive?'opacity:.5;':'';
+      h+='<tr style="'+rowStyle+'"><td><input type="checkbox" '+(m.inactive?'':'checked')+' onchange="toggleMemberActive(\''+gender+'\','+idx+',this.checked)"></td><td>'+m.name+'</td><td>'+getGroup(m)+'</td><td><input type="checkbox" '+(m.nandi?'checked':'')+' onchange="toggleMemberNandi(\''+gender+'\','+idx+',this.checked)"></td><td><input type="text" value="'+(m.note||'')+'" placeholder="..." onchange="updateMemberNote(\''+gender+'\','+idx+',this.value)" style="border:1px solid #ddd;border-radius:4px;padding:3px 6px;font-size:.72rem;width:100px;font-family:DM Sans,sans-serif;outline:none;"></td></tr>';
+    });
+    return h+'</tbody></table>';
+  }
+  return '<div class="roster-card" style="margin-bottom:20px;"><div class="roster-card-header"><h2>Male ('+activeM+' active / '+MEMBERS.male.length+' total)</h2></div>'+renderTable(MEMBERS.male,'male')+'</div><div class="roster-card"><div class="roster-card-header"><h2>Female ('+activeF+' active / '+MEMBERS.female.length+' total)</h2></div>'+renderTable(MEMBERS.female,'female')+'</div>';
+}
+
+function toggleMemberActive(gender,idx,checked){
+  MEMBERS[gender][idx].inactive=!checked;
+  saveState();
+  updateMemberSummary();
+  showToast(MEMBERS[gender][idx].name+(checked?' activated':' deactivated'));
+}
+function toggleMemberNandi(gender,idx,checked){
+  MEMBERS[gender][idx].nandi=checked;
+  saveState();
+  updateMemberSummary();
+  showToast(MEMBERS[gender][idx].name+(checked?' can do Nandi':' removed from Nandi'));
+}
+function updateMemberNote(gender,idx,val){
+  MEMBERS[gender][idx].note=val;
+  saveState();
+}
+
+let fairnessView='person';
+function renderFairnessHTML(){
+  const ev=events[selectedEventIdx];
+  const currentPeriod=ev?getEventPeriodKey(ev):null;
+  const cycleRosters=[];
+  Object.keys(generatedRosters).forEach(eventId=>{
+    const event=events.find(e=>e.id===eventId);
+    if(!event)return;
+    if(currentPeriod&&getEventPeriodKey(event)!==currentPeriod)return;
+    cycleRosters.push({event,roster:generatedRosters[eventId]});
+  });
+
+  let h=`<div class="fairness-section"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+    <div class="fairness-title" style="margin-bottom:0;">Duty Fairness — Current Cycle</div>
+    <div class="btn-row">
+      <button class="btn-generate" style="${fairnessView==='person'?'':'background:var(--bg-alt);color:var(--primary);border:1px solid var(--primary);'}font-size:.75rem;padding:6px 12px;" onclick="fairnessView='person';renderMainForEvent(selectedEventIdx)">👤 Per Person</button>
+      <button class="btn-generate" style="${fairnessView==='duty'?'':'background:var(--bg-alt);color:var(--primary);border:1px solid var(--primary);'}font-size:.75rem;padding:6px 12px;" onclick="fairnessView='duty';renderMainForEvent(selectedEventIdx)">📋 Per Duty</button>
+      <button class="btn-generate" style="${fairnessView==='unassigned'?'':'background:var(--bg-alt);color:var(--primary);border:1px solid var(--primary);'}font-size:.75rem;padding:6px 12px;" onclick="fairnessView='unassigned';renderMainForEvent(selectedEventIdx)">⚠️ Gaps</button>
+    </div></div>`;
+
+  if(fairnessView==='person') h+=renderFairnessPerson(cycleRosters);
+  else if(fairnessView==='duty') h+=renderFairnessDuty(cycleRosters);
+  else h+=renderFairnessGaps(cycleRosters);
+
+  return h+'</div>';
+}
+function renderFairnessPerson(cycleRosters){
+  const all=[...MEMBERS.male,...MEMBERS.female];
+  const cycleCounts={};all.forEach(m=>cycleCounts[m.name]=0);
+  cycleRosters.forEach(({roster})=>{(roster||[]).forEach(row=>{[...row.male,...row.female].forEach(n=>{cycleCounts[n]=(cycleCounts[n]||0)+1;});});});
+  const max=Math.max(...all.map(m=>cycleCounts[m.name]||0),1);
+  let h='<div class="fairness-grid">';
+  all.sort((a,b)=>(cycleCounts[b.name]||0)-(cycleCounts[a.name]||0)).forEach(m=>{
+    const c=cycleCounts[m.name]||0,pct=Math.round(c/max*100);
+    h+=`<div class="fairness-card" onclick="showMemberDetail('${m.name.replace(/'/g,"\\'")}')"><div class="fairness-name">${m.name}</div>
+      <div class="fairness-count">${c} duty${c!==1?'s':''} · ${getGroup(m)}</div>
+      <div class="fairness-bar-bg"><div class="fairness-bar-fill" style="width:${pct}%"></div></div></div>`;
+  });
+  return h+'</div>';
+}
+function renderFairnessDuty(cycleRosters){
+  const dutyCounts={};
+  cycleRosters.forEach(({roster})=>{(roster||[]).forEach(row=>{
+    if(!dutyCounts[row.duty])dutyCounts[row.duty]={total:0,members:{}};
+    [...row.male,...row.female].forEach(n=>{
+      dutyCounts[row.duty].total++;
+      dutyCounts[row.duty].members[n]=(dutyCounts[row.duty].members[n]||0)+1;
+    });
+  });});
+  const sorted=Object.entries(dutyCounts).sort((a,b)=>b[1].total-a[1].total);
+  const maxTotal=Math.max(...sorted.map(([,v])=>v.total),1);
+  let h='<div style="display:flex;flex-direction:column;gap:10px;">';
+  sorted.forEach(([duty,info])=>{
+    const pct=Math.round(info.total/maxTotal*100);
+    const topMembers=Object.entries(info.members).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,c])=>n+' ('+c+')').join(', ');
+    h+=`<div class="fairness-card"><div class="fairness-name">${duty}</div>
+      <div class="fairness-count">${info.total} assignments · ${Object.keys(info.members).length} unique members</div>
+      <div class="fairness-bar-bg"><div class="fairness-bar-fill" style="width:${pct}%"></div></div>
+      <div style="font-size:.7rem;color:var(--text-light);margin-top:4px;">Top: ${topMembers}</div></div>`;
+  });
+  return h+'</div>';
+}
+function renderFairnessGaps(cycleRosters){
+  const all=[...MEMBERS.male,...MEMBERS.female].filter(m=>!m.inactive);
+  const assigned=new Set();
+  const perEvent=[];
+  cycleRosters.forEach(({event,roster})=>{
+    const evAssigned=new Set();(roster||[]).forEach(row=>{[...row.male,...row.female].forEach(n=>{evAssigned.add(n);assigned.add(n);});});
+    const missing=all.filter(m=>!evAssigned.has(m.name));
+    if(missing.length)perEvent.push({event,missing});
+  });
+  const neverAssigned=all.filter(m=>!assigned.has(m.name));
+  let h='';
+  if(neverAssigned.length){
+    h+=`<div class="roster-card" style="margin-bottom:16px;"><div class="roster-card-header" style="background:#c0392b;"><h2>Never Assigned This Cycle (${neverAssigned.length})</h2></div>
+      <div style="padding:12px 16px;">${neverAssigned.map(m=>'<span class="name-pill">'+m.name+'</span>').join('')}</div></div>`;
+  }
+  if(perEvent.length){
+    h+=perEvent.map(({event,missing})=>`<div class="fairness-card" style="margin-bottom:8px;"><div class="fairness-name">${event.name} — ${event.date}</div>
+      <div class="fairness-count">${missing.length} unassigned: ${missing.slice(0,8).map(m=>m.name).join(', ')}${missing.length>8?' +more':''}</div></div>`).join('');
+  }
+  if(!neverAssigned.length&&!perEvent.length) h='<div class="empty-state"><div class="icon">✅</div><h3>No Gaps</h3><p>All members assigned in every event.</p></div>';
+  return h;
+}
+
+function showMemberDetail(memberName) {
+  const ev=events[selectedEventIdx];const currentPeriod=ev?getEventPeriodKey(ev):null;
+  const assignments = (prevAssign[memberName] || []).filter(a=>!currentPeriod||a.period===currentPeriod);
+
+  let h = `
+    <div class="main-header">
+      <div>
+        <div class="main-title">Duty Breakdown for ${memberName}</div>
+        <div class="main-sub">Total Duties Assigned: <strong>${assignments.length}</strong></div>
+      </div>
+      <button class="btn-cancel" onclick="switchTab('fairness', selectedEventIdx)">← Back to Fairness Summary</button>
+    </div>
+    <div class="roster-card">
+      <table>
+        <thead><tr><th>Event Name</th><th>Event Date</th><th>Duty Assigned</th></tr></thead>
+        <tbody>`;
+
+  assignments.sort((a,b) => new Date(events.find(e=>e.id===a.ev).dateRaw) - new Date(events.find(e=>e.id===b.ev).dateRaw)).forEach(a => {
+    const event = events.find(e => e.id === a.ev);
+    h += `<tr><td>${event.name}</td><td>${event.date}</td><td>${a.duty}</td></tr>`;
+  });
+
+  h += `</tbody></table></div>`;
+  document.getElementById('tabContent').innerHTML = h;
+}
+
+function renderCycleSummaryHTML(cycleEvents, title, subtitle) {
+  let h = `<div style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;"><div><div style="font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--dark);margin-bottom:8px;">📋 ${title}</div>
+    <p style="font-size:.82rem;color:var(--mid);line-height:1.5;">${subtitle}</p></div><div class="btn-row"><button onclick="generateAllRosters()" class="btn-generate">⚡⚡ Generate All</button><button onclick="exportCycleToExcel()" class="btn-generate" style="background:var(--bg-alt);color:var(--primary);border:1px solid var(--primary);">📊 Export Excel</button></div></div>`;
+
+  cycleEvents.forEach(ev => {
+    const r = generatedRosters[ev.id];
+    h += `<div class="roster-card" style="margin-bottom:28px;">
+      <div class="roster-card-header">
+        <h2>${ev.locked ? '🔒 ' : ''}${ev.name}</h2>
+        <span>${ev.date}${ev.notes ? ' · ' + ev.notes : ''}</span>
+      </div>`;
+
+    if (!r) {
+      h += `<div class="not-generated" style="padding: 24px 13px;">This roster has not been generated yet.</div>`;
+    } else {
+      const adults = r.filter(rw => rw.section === 'adults'), youth = r.filter(rw => rw.section === 'youth');
+      const allAssigned = (adults.concat(youth)).flatMap(rw => [...rw.male, ...rw.female]);
+
+      h += `<table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="background:var(--cream2);">
+          <th style="font-size:.69rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);">Duty</th>
+          <th style="font-size:.69rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);">Male</th>
+          <th style="font-size:.69rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);">Female</th>
+        </tr></thead><tbody>`;
+
+      const secTable = (rows) => {
+        rows.forEach(rw => {
+          h += `<tr>
+            <td style="padding:9px 13px;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.05);"><span style="font-weight:600;color:var(--dark);">${rw.duty}</span></td>
+            <td style="padding:9px 13px;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.05);">${rw.male.join(' / ') || '—'}</td>
+            <td style="padding:9px 13px;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.05);">${rw.female.join(' / ') || '—'}</td>
+          </tr>`;
+        });
+      };
+
+      if (adults.length) { h += `<tr><td colspan="3" class="sub-table-header">Adults</td></tr>`; secTable(adults); }
+      if (youth.length) { h += `<tr><td colspan="3" class="sub-table-header"><span class="youth-tag">Youth</span></td></tr>`; secTable(youth); }
+      h += `</tbody></table>`;
+    }
+    h += `</div>`;
+  });
+  return h;
+}
+
+function renderOverviewHTML(){
+  let h='<div class="overview-grid">';
+  events.forEach((ev,i)=>{
+    const r=generatedRosters[ev.id];
+    h+=`<div class="overview-card ${ev.locked?'locked-card':''}" onclick="selectEvent(${i});currentTab='event';">
+      <div class="overview-card-head"><h3>${ev.locked?'🔒 ':''}${ev.name}</h3><span>${ev.date}</span></div>`;
+    if(!r){h+=`<div class="not-generated">Not yet generated</div>`;}
+    else{
+      h+='<div class="overview-card-body">';
+      r.slice(0,9).forEach(rw=>{const a=[...rw.male,...rw.female];h+=`<div class="overview-duty-row"><span class="overview-duty-name">${rw.duty}</span><span class="overview-duty-names">${a.length?a.join(' / '):'—'}</span></div>`;});
+      if(r.length>9)h+=`<div style="font-size:.7rem;color:var(--mid);padding-top:3px;">+${r.length-9} more…</div>`;
+      h+='</div>';
+    }
+    h+='</div>';
+  });
+  return h+'</div>';
+}
+
+function renderMarchHTML(){
+  let h=`<div style="margin-bottom:24px;"><div style="font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--dark);margin-bottom:8px;">📋 March 2026 — Historical Summary</div>
+    <p style="font-size:.82rem;color:var(--mid);line-height:1.5;">All March events with complete roster assignments. This serves as the fairness baseline for May–June scheduling.</p></div>`;
+  
+  events.filter(e=>e.locked).forEach(ev=>{
+    const r=generatedRosters[ev.id];
+    if(!r)return;
+    const adults=r.filter(rw=>rw.section==='adults'),youth=r.filter(rw=>rw.section==='youth');
+    const allAssigned=(adults.concat(youth)).flatMap(rw=>[...rw.male,...rw.female]);
+    
+    h+=`<div class="roster-card" style="margin-bottom:28px;">
+      <div class="roster-card-header">
+        <h2>🔒 ${ev.name}</h2>
+        <span>${ev.date}${ev.notes?' · '+ev.notes:''}</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="background:var(--cream2);">
+          <th style="font-size:.69rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);">Duty</th>
+          <th style="font-size:.69rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);">Male</th>
+          <th style="font-size:.69rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);">Female</th>
+        </tr></thead>
+        <tbody>`;
+    
+    function secTable(rows){
+      rows.forEach(rw=>{
+        const m=rw.male.join(' / ')||'—';
+        const f=rw.female.join(' / ')||'—';
+        h+=`<tr>
+          <td style="padding:9px 13px;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.05);"><span style="font-weight:600;color:var(--dark);">${rw.duty}</span></td>
+          <td style="padding:9px 13px;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.05);">${m}</td>
+          <td style="padding:9px 13px;font-size:.8rem;border-bottom:1px solid rgba(0,0,0,.05);">${f}</td>
+        </tr>`;
+      });
+    }
+    
+    if(adults.length){
+      h+=`<tr><td colspan="3" class="sub-table-header">Adults</td></tr>`;
+      secTable(adults);
+    }
+    if(youth.length){
+      h+=`<tr><td colspan="3" class="sub-table-header"><span class="youth-tag">Youth</span></td></tr>`;
+      secTable(youth);
+    }
+    
+    h+=`</tbody></table>
+      <div style="background:var(--cream2);padding:10px 13px;font-size:.73rem;color:var(--mid);border-top:1px solid var(--border);">
+        <strong>${allAssigned.length} members assigned</strong> · Event Type: <strong>${getEventTypeLabel(ev)}</strong>
+      </div>
+    </div>`;
+  });
+  
+  return h;
+}
+
+function renderDocsHTML(){
+  return `
+    <div style="max-width: 800px; margin: 0 auto; padding: 20px; font-size: 0.9rem; line-height: 1.6;">
+      <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--primary); margin-bottom: 30px; text-align: center;">IV Team B - Roster Generator Documentation</h1>
+      
+      <section style="margin-bottom: 40px;">
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text-main); margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">Project Overview</h2>
+        <p>This project is a web-based <strong>Automatic Roster Generator</strong> for the "IV Team B" volunteer group. Its primary purpose is to automate the complex and time-consuming task of assigning duties to team members for various events.</p>
+        <p>The tool is designed to be used by a Team Leader to create fair, compliant, and efficient rosters with the click of a button. It is a standalone HTML file that runs entirely in the browser, with no server-side components required.</p>
+      </section>
+
+      <section style="margin-bottom: 40px;">
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text-main); margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">Core Concepts</h2>
+        <ul>
+          <li><strong>Members</strong>: A predefined list of team members, each with an age, gender, and a special nandi flag indicating experience for a key duty.</li>
+          <li><strong>Groups</strong>: Members are automatically categorized into three groups based on age: <strong>Child</strong> (&lt;12), <strong>Youth</strong> (12–17), and <strong>Adult</strong> (18+). These groups determine eligibility for different duties.</li>
+          <li><strong>Events</strong>: A schedule of upcoming events, each with a type (e.g., Friday, Chandraat) that determines which duties are available.</li>
+          <li><strong>Duties</strong>: A set of responsibilities to be assigned. Each duty has a specific set of rules governing who can be assigned.</li>
+          <li><strong>Fairness Algorithm</strong>: The core logic that ensures duties are distributed as equitably as possible over time.</li>
+          <li><strong>Historical Data</strong>: Past rosters (from March & April 2026) are used as a baseline to ensure long-term fairness.</li>
+        </ul>
+      </section>
+
+      <section style="margin-bottom: 40px;">
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text-main); margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">The Generation Algorithm</h2>
+        <p>The heart of the generator is the <code>pick()</code> function, which selects members for a given duty. It follows a strict, multi-step process to ensure all rules are met.</p>
+        <ol>
+          <li><strong>Filter for Basic Eligibility</strong>: The initial pool of members is filtered based on the duty's requirements (e.g., Adult, Female, nandi: true).</li>
+          <li><strong>Apply Exclusion Rules</strong>:
+            <ul>
+              <li><strong>Used in Event</strong>: Excludes any member who has already been assigned another duty in the same event.</li>
+              <li><strong>Duty Cycle Repeat</strong>: Excludes any member who has already performed the exact same duty within the same duty cycle. A duty cycle is a two-month period (e.g., Mar-Apr, May-Jun).
+                <ul><li><strong>Exception</strong>: The Nandi Line, Nandi Passing, and Nandi Distribution duties are exempt from this rule and can be assigned multiple times per cycle.</li></ul>
+              </li>
+            </ul>
+          </li>
+          <li><strong>Apply Fairness Sorting</strong>: The remaining eligible candidates are sorted to find the best person for the job:
+            <ul>
+              <li><strong>Primary Sort</strong>: Members with the fewest total duties assigned to them across all events are prioritized.</li>
+              <li><strong>Secondary Sort</strong>: Members who have not performed this specific duty before (in previous months) are prioritized over those who have.</li>
+              <li><strong>Tie-Breaker</strong>: Any remaining ties are broken randomly.</li>
+            </ul>
+          </li>
+          <li><strong>Handle Hard Requirements (Fallback)</strong>:
+            <ul>
+              <li>If the above filtering results in zero eligible candidates for a "hard-required" duty (currently Nandi), the algorithm will ignore the Duty Cycle Repeat rule and pick from the pool of members who have already done that duty in the same month. This ensures critical duties are always filled.</li>
+              <li><strong>Exception</strong>: For major duties like Sukreet, this fallback is disabled. The system will prioritize not repeating a person for that duty within the same cycle, even if it means a slot may go unfilled in rare cases.</li>
+            </ul>
+          </li>
+        </ol>
+      </section>
+
+      <section style="margin-bottom: 40px;">
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text-main); margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">Duty-Specific Rules</h2>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          <thead>
+            <tr style="background: var(--bg-main);">
+              <th style="padding: 10px; text-align: left; border: 1px solid var(--border-color); font-weight: 600;">Duty</th>
+              <th style="padding: 10px; text-align: left; border: 1px solid var(--border-color); font-weight: 600;">Assignment Rules & Logic</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Nandi</td><td style="padding: 10px; border: 1px solid var(--border-color);">2 Nandi-experienced Adults. The gender mix is randomized between 2M, 2F, or 1M+1F. This is a "hard-required" duty.</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Nandi Labelling</td><td style="padding: 10px; border: 1px solid var(--border-color);">2 people. Primarily a mix of Adult/Youth females. On Chandraat events, there is a 40% chance it will be assigned to a mix of Adult/Youth males instead.</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Nandi Line</td><td style="padding: 10px; border: 1px solid var(--border-color);">4-10 people per gender. Prioritizes unassigned Adults, then unassigned Youth, then any remaining Adults/Youth. This duty can be repeated within a month.</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Nandi Passing</td><td style="padding: 10px; border: 1px solid var(--border-color);">3-8 people per gender. Prioritizes unassigned Children, then unassigned Youth, then any remaining members. This duty can be repeated within a month.</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Nandi Centre</td><td style="padding: 10px; border: 1px solid var(--border-color);">1 person (Adult or Youth). Gender is randomized.</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Nandi Trolley</td><td style="padding: 10px; border: 1px solid var(--border-color);">1 person (Adult or Youth). Gender is randomized.</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Nandi Set-up</td><td style="padding: 10px; border: 1px solid var(--border-color);">1 Male + 1 Female (Adult or Youth).</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Nandi Distribution</td><td style="padding: 10px; border: 1px solid var(--border-color);">1 Male + 1 Female. A mix of Adults and Youth. Repeatable within the same duty cycle.</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Prayer Hall Entrance</td><td style="padding: 10px; border: 1px solid var(--border-color);">2 Male Children + 2 Female Children. Falls back to Youth if not enough Children are available.</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Shoe Entrance</td><td style="padding: 10px; border: 1px solid var(--border-color);">1 Male Youth + 1 Female Youth. Falls back to Adults if not enough Youth are available.</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Number 1</td><td style="padding: 10px; border: 1px solid var(--border-color);">1 Male + 1 Female (Adult or Youth).</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Seating & Discipline</td><td style="padding: 10px; border: 1px solid var(--border-color);">1 Adult + 1 Youth per gender.</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Sukreet</td><td style="padding: 10px; border: 1px solid var(--border-color);">Per gender: 60% chance of 1 Adult + 1 Youth, otherwise 2 Adults.</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Sukreet & Ghatpaat Closing</td><td style="padding: 10px; border: 1px solid var(--border-color);">1 Male + 1 Female. Prioritizes Youth, falls back to Adults.</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Safety Exit Door/Discipline</td><td style="padding: 10px; border: 1px solid var(--border-color);">Female only. 50% chance of 1 Adult + 1 Youth, otherwise 1 Adult.</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Chai Station</td><td style="padding: 10px; border: 1px solid var(--border-color);">Adults only. 1-2 Males and 0-1 Females. Only appears on Friday and Chandraat events.</td></tr>
+            <tr><td style="padding: 10px; border: 1px solid var(--border-color);">Water Station</td><td style="padding: 10px; border: 1px solid var(--border-color);">1 Male + 1 Female (Adult or Youth). Appears on Chandraat and Navroz events.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section style="margin-bottom: 40px;">
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text-main); margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">Duty Categories by Event Type</h2>
+        <h3 style="font-size: 1.2rem; margin-bottom: 10px;">Core Duties (Available at most events)</h3>
+        <ul>
+          <li>Nandi</li>
+          <li>Nandi Labelling</li>
+          <li>Nandi Line</li>
+          <li>Nandi Passing</li>
+          <li>Nandi Centre</li>
+          <li>Nandi Trolley</li>
+          <li>Nandi Set-up</li>
+          <li>Nandi Distribution</li>
+          <li>Prayer Hall Entrance</li>
+          <li>Shoe Entrance</li>
+          <li>Number 1</li>
+          <li>Seating & Discipline</li>
+          <li>Sukreet</li>
+          <li>Sukreet Pack Up / Ghatpaat Closing</li>
+          <li>Safety Exit Door (MPH)</li>
+        </ul>
+
+        <h3 style="font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px;">Event-Specific Duties</h3>
+        <h4 style="font-size: 1rem; margin-bottom: 5px;">Friday Events</h4>
+        <p>Includes all Core Duties.</p>
+        <ul><li>Chai Station</li></ul>
+
+        <h4 style="font-size: 1rem; margin-bottom: 5px; margin-top: 15px;">Chandraat Events</h4>
+        <p>Includes all Core Duties.</p>
+        <ul>
+          <li>Chai Station</li>
+          <li>Water Station</li>
+        </ul>
+
+        <h4 style="font-size: 1rem; margin-bottom: 5px; margin-top: 15px;">Baithulkhayal Events</h4>
+        <p>Includes all Core Duties.</p>
+        <p><em>No</em> Chai Station or Water Station.</p>
+
+        <h4 style="font-size: 1rem; margin-bottom: 5px; margin-top: 15px;">Paanch Baar Saal Events</h4>
+        <p>Includes all Core Duties.</p>
+
+        <h4 style="font-size: 1rem; margin-bottom: 5px; margin-top: 15px;">Student Mijalis Events</h4>
+        <p>Includes all Core Duties.</p>
+        <p>These events often have the congregation flag, which adds youth-specific duties.</p>
+
+        <h4 style="font-size: 1rem; margin-bottom: 5px; margin-top: 15px;">Navroz Events</h4>
+        <p>Includes all Core Duties.</p>
+      </section>
+
+      <section style="margin-bottom: 40px;">
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text-main); margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">Special Logic & Features</h2>
+        <h3 style="font-size: 1.2rem; margin-bottom: 10px;">Historical Data (March 2026)</h3>
+        <ul>
+          <li>The application is pre-loaded with the complete roster data for all events in March and April 2026.</li>
+          <li>This data serves as a fairness baseline. The duty counts from March are included when the algorithm calculates who has the "fewest duties" for the next cycle (May-June).</li>
+          <li>Historical events are locked and cannot be regenerated, though individual substitutions are still possible.</li>
+        </ul>
+
+        <h3 style="font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px;">Congregation Events</h3>
+        <ul>
+          <li>Events marked with congregation: true or containing "congregation" in their notes trigger an additional set of youth-focused duties.</li>
+          <li>This is designed to increase youth involvement. The additional duties are:
+            <ul>
+              <li>MPH Hall Entrance: 1 Child/Youth per gender.</li>
+              <li>Seating & Discipline (Youth): 1 Youth per gender.</li>
+              <li>Sukreet & Ghatpaat Closing (Youth): 1 Youth/Adult per gender.</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h3 style="font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px;">Child Safety</h3>
+        <ul>
+          <li>Children (age &lt; 12) can only be assigned to a specific list of approved duties: Prayer Hall Entrance, MPH Hall Entrance, Nandi Passing, and Shoe Entrance. The substitution modal enforces this rule.</li>
+        </ul>
+      </section>
+
+      <section style="margin-bottom: 40px;">
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text-main); margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">How to Update the Roster</h2>
+        <p>All data and logic are contained within <code>iv_team_a_roster.html</code>. To make changes, edit this file directly.</p>
+
+        <h3 style="font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px;">Adding or Modifying Members</h3>
+        <ol>
+          <li>Find the <code>const MEMBERS</code> object in the &lt;script&gt; section.</li>
+          <li>Add or edit member objects in the male or female arrays.</li>
+          <li>Each member must have a name, age, and nandi property (true if they are Nandi-experienced, otherwise false).</li>
+        </ol>
+
+        <h3 style="font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px;">Adding or Modifying Events</h3>
+        <ol>
+          <li>Find the <code>const baseEvents</code> array in the setupEvents() function.</li>
+          <li>Add or edit event objects in this array.</li>
+          <li>Each event needs an id, name, type, dateRaw, and optional notes and congregation flag.</li>
+        </ol>
+
+        <h3 style="font-size: 1.2rem; margin-bottom: 10px; margin-top: 20px;">Modifying Duty Rules</h3>
+        <ol>
+          <li>The logic for each duty is located in the generateRoster() function, inside the for(const d of dutyList) loop.</li>
+          <li>Each if/else if block corresponds to a duty name. Modifying the logic within a block will change how members are assigned to that duty.</li>
+        </ol>
+      </section>
+
+      <section style="margin-bottom: 40px;">
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text-main); margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">Groups and Eligibility</h2>
+        <ul>
+          <li><strong>Child</strong> — under 12</li>
+          <li><strong>Youth</strong> — 12–17</li>
+          <li><strong>Adult</strong> — 18+</li>
+        </ul>
+      </section>
+
+      <section style="margin-bottom: 40px;">
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text-main); margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">Fairness & No-Repeat Logic</h2>
+        <ul>
+          <li><strong>Major duties</strong> (Nandi, Nandi Labelling, Number 1, Seating & Discipline, Sukreet, Safety Exit, Shoe Entrance, Chai Station) — no repeat for the same person within the cycle</li>
+          <li><strong>Nandi Line & Nandi Passing</strong> — can repeat, used to absorb any member who hasn't been assigned yet</li>
+          <li>Every IV member should have at least 1 duty per event where possible</li>
+          <li>Assignment priority: fewest duties so far → hasn't done this duty before → random tiebreak</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--text-main); margin-bottom: 20px; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">Change Log</h2>
+        <ul>
+          <li><strong>2026-03-28:</strong> Added direct fix to always seed and lock the March 28, 2026 Student Mijalis event. Added final manual roster for April 3, 2026 as historical data. Full Month summary now displays all duties and columns for each event in a responsive table. UI ensures no unnecessary horizontal/vertical scrollbars for summary tables. Sidebar and event views distinguish between historical (locked) and upcoming (unlocked) events. Color palette and logo updated to match Ismaili Volunteers branding.</li>
+        </ul>
+        <p><em>Note: We do not follow calendar month, we follow duty cycle which is every alternate lunar month. Current duty cycle Mar - Apr events. Next duty cycle Apr - May events -- TEAM B EVENTS - NOT TEAM A EVENTS.</em></p>
+      </section>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════
+// CONFIRM / DISCARD ROSTER
+// ══════════════════════════════════════
+function unconfirmRoster(i){
+  const ev=events[i];
+  if(!ev)return;
+  confirmedRosters.delete(ev.id);
+  saveState();
+  showToast('Roster unconfirmed');
+  renderEventList();
+  renderMainForEvent(i);
+}
+
+function toggleCongregation(i,checked){
+  events[i].congregation=checked;
+  saveState();
+  renderMainForEvent(i);
+}
+
+function confirmRoster(i){
+  const ev=events[i];
+  if(!ev)return;
+  confirmedRosters.add(ev.id);
+  saveState();
+  showToast('Roster confirmed ✓');
+  renderEventList();
+  renderMainForEvent(i);
+}
+
+function saveChanges(i) {
+    hasUnsavedChanges.delete(events[i].id);
+    saveState();
+    renderMainForEvent(i);
+}
+function openSubModal(evIdx,ri,gender,removeName){
+  const ev=events[evIdx],row=generatedRosters[ev.id][ri];
+  subContext={evIdx,ri,gender,removeName};
+  document.getElementById('subDutyLabel').textContent=row.duty+' ('+gender+')';
+  const cur=row[gender]||[];
+  const eventAssigned=new Set((generatedRosters[ev.id]||[]).flatMap(r=>[...(r.male||[]),...(r.female||[])]));
+  document.getElementById('subRemoveSelect').innerHTML=removeName
+    ?`<option value="${removeName}">${removeName}</option>`
+    :'<option value="">— adding new —</option>'+cur.map(n=>`<option value="${n}">${n}</option>`).join('');
+  const assigned=new Set(cur);
+  const all=[...MEMBERS.male,...MEMBERS.female].filter(m=>{
+    if(assigned.has(m.name)&&m.name!==removeName)return false;
+    if(eventAssigned.has(m.name)&&m.name!==removeName)return false;
+    if(row.duty==='Nandi'&&!m.nandi)return false;
+    if(isChild(m)&&!CHILD_ALLOWED.has(row.duty))return false;
+    return true;
+  });
+  document.getElementById('subAddSelect').innerHTML=all.map(m=>`<option value="${m.name}">${m.name} (${getGroup(m)})</option>`).join('');
+  document.getElementById('subModal').classList.add('open');
+}
+
+function confirmSubstitute(){
+  if(!subContext)return;
+  const{evIdx,ri,gender,removeName}=subContext;
+  const ev=events[evIdx],row=generatedRosters[ev.id][ri];
+  const addName=document.getElementById('subAddSelect').value;
+  const remFinal=document.getElementById('subRemoveSelect').value||removeName;
+  if(!addName){showToast('Please select a replacement.');return;}
+  let names=[...(row[gender]||[])];
+  if(remFinal&&names.includes(remFinal)){
+    names=names.map(n=>n===remFinal?addName:n);
+    dutyCounts[remFinal]=Math.max(0,(dutyCounts[remFinal]||1)-1);
+    dutyCounts[addName]=(dutyCounts[addName]||0)+1;
+  } else {names.push(addName);dutyCounts[addName]=(dutyCounts[addName]||0)+1;}
+  row[gender]=names;
+
+  // Track manual override
+  if (!manualOverrides[ev.id]) manualOverrides[ev.id] = {};
+  if (!manualOverrides[ev.id][ri]) manualOverrides[ev.id][ri] = {};
+  if (!manualOverrides[ev.id][ri][gender]) manualOverrides[ev.id][ri][gender] = {};
+  manualOverrides[ev.id][ri][gender][addName] = true;
+  hasUnsavedChanges.add(ev.id);
+
+  saveState();
+  closeModal('subModal');subContext=null;
+  renderMainForEvent(evIdx);renderEventList();
+}
+
+// ══════════════════════════════════════
+// ADD EVENT / RESET
+// ══════════════════════════════════════
+function openAddEventModal(){document.getElementById('addEventModal').classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function addEvent(){
+  const name=document.getElementById('newEventName').value.trim();
+  const type=document.getElementById('newEventType').value;
+  const date=document.getElementById('newEventDate').value;
+  const notes=document.getElementById('newEventNotes').value.trim();
+  const congregation=document.getElementById('newEventCongregation').value==='yes';
+  if(!name||!date){showToast('Please enter event name and date.');return;}
+  const d=new Date(date);
+  const dateRaw=d.toLocaleDateString('en-NZ',{day:'numeric',month:'long',year:'numeric'});
+  events.push({
+    id:'e'+Date.now(),
+    name,
+    type,
+    dateRaw,
+    date:formatDateWithDay(dateRaw),
+    notes,
+    congregation,
+    locked:isBeforeToday(dateRaw),
+  });
+  saveState();
+  closeModal('addEventModal');renderEventList();
+  document.getElementById('newEventName').value='';document.getElementById('newEventDate').value='';document.getElementById('newEventNotes').value='';
+}
+
+function resetCycle(silent){
+  if(!silent&&!confirm('Reset all rosters? Historical data is preserved as fairness baseline.'))return;
+  localStorage.removeItem('rosterGeneratorStateB');
+  const march={};events.filter(e=>e.locked).forEach(e=>{march[e.id]=generatedRosters[e.id];});hasUnsavedChanges.clear();
+  resetCounts();generatedRosters={...march};seedMarch();manualOverrides={};
+  saveState();
+  selectedEventIdx=null;renderEventList();
+  document.getElementById('mainContent').innerHTML=`<div class="empty-state"><div class="icon">📋</div><h3>Cycle Reset</h3><p>March history preserved. Select an event and generate the current cycle roster.</p></div>`;
+}
+
+// ══════════════════════════════════════
+// LOCAL STORAGE PERSISTENCE
+// ══════════════════════════════════════
+function saveState() {
+  const stateToSave = {
+    events,
+    generatedRosters,
+    manualOverrides,
+    confirmedRosters: Array.from(confirmedRosters)
+  };
+  localStorage.setItem('rosterGeneratorStateB', JSON.stringify(stateToSave));
+}
+
+function loadState() {
+  const savedStateJSON = localStorage.getItem('rosterGeneratorStateB');
+  if (!savedStateJSON) return false;
+  const savedState = JSON.parse(savedStateJSON);
+  // Restore rosters/overrides but always use code-defined events (setupEvents already ran)
+  // This ensures new event properties (congregation, notes, type changes) take effect
+  generatedRosters = savedState.generatedRosters || {};
+  manualOverrides = savedState.manualOverrides || {};
+  confirmedRosters = new Set(savedState.confirmedRosters || []);
+  // Merge any user-added events from saved state that aren't in the code-defined list
+  const codeIds = new Set(events.map(e => e.id));
+  (savedState.events || []).forEach(savedEv => {
+    if (!codeIds.has(savedEv.id)) events.push(savedEv);
+  });
+  return true;
+}
+
+function copyRosterTable(i){
+  const ev=events[i];
+  const roster=generatedRosters[ev.id];
+  if(!roster){showToast('No roster to copy.');return;}
+  let text=`${ev.name} — ${ev.date}\n\n`;
+  text+='Duty\tMale\tFemale\n';
+  roster.forEach(r=>{
+    text+=`${r.duty}\t${r.male.join(', ')||'—'}\t${r.female.join(', ')||'—'}\n`;
+  });
+  navigator.clipboard.writeText(text).then(()=>showToast('Roster copied to clipboard ✓')).catch(()=>showToast('Copy failed'));
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function exportRosterImage(i){
+  const ev=events[i];
+  const card=document.querySelector('.roster-card');
+  if(!card){showToast('No roster to export.');return;}
+  // Temporarily hide sub buttons for clean export
+  const btns=card.querySelectorAll('.btn-sub');
+  btns.forEach(b=>b.style.display='none');
+  html2canvas(card,{backgroundColor:'#ffffff',scale:2}).then(canvas=>{
+    btns.forEach(b=>b.style.display='');
+    const link=document.createElement('a');
+    const datePart=(ev.dateRaw||'').replace(/[^\d-]/g,'');
+    link.download=`Team_B_${ev.name.replace(/\s+/g,'_')}_${datePart}.png`;
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+  }).catch(err=>{
+    btns.forEach(b=>b.style.display='');
+    showToast('Export failed: '+err.message);
+  });
+}
+
+function exportCycleToExcel(){
+  const ev=selectedEventIdx!==null?events[selectedEventIdx]:events.find(e=>!e.locked)||events[0];
+  if(!ev){showToast('Select an event first.');return;}
+
+  // Group events into chandraat-based cycles
+  const allSorted=[...events].sort((a,b)=>new Date(a.dateRaw)-new Date(b.dateRaw));
+  const cycles=[];
+  allSorted.forEach(e=>{
+    if(e.type==='chandraat'||cycles.length===0) cycles.push([]);
+    cycles[cycles.length-1].push(e);
+  });
+  let cycleEvents=[];
+  for(const c of cycles){if(c.some(e=>e.id===ev.id)){cycleEvents=c;break;}}
+  if(!cycleEvents.length){showToast('No events in this cycle.');return;}
+  const generated=cycleEvents.filter(e=>generatedRosters[e.id]);
+  if(!generated.length){showToast('No rosters generated. Click Generate All first.');return;}
+  if(generated.length<cycleEvents.length){showToast('Exporting '+generated.length+'/'+cycleEvents.length+' events (generate remaining first)');}
+
+  // Styles - All fonts Calibri, all text cells have borders
+  const border={top:{style:'thin',color:{rgb:'000000'}},bottom:{style:'thin',color:{rgb:'000000'}},left:{style:'thin',color:{rgb:'000000'}},right:{style:'thin',color:{rgb:'000000'}}};
+  const sTitle={font:{bold:true,sz:18,color:{rgb:'FF0000'},name:'Calibri'},alignment:{horizontal:'center',vertical:'center'},border};
+  const sHeader={font:{bold:true,sz:13,color:{rgb:'0000FF'},name:'Calibri'},alignment:{horizontal:'left',vertical:'center'},border};
+  const sDuty={font:{bold:true,sz:16,color:{rgb:'000000'},name:'Calibri'},alignment:{vertical:'center'},border};
+  const sCell={font:{sz:13,color:{rgb:'000000'},name:'Calibri'},alignment:{vertical:'center',wrapText:true},border};
+  const sYouthTitle={font:{bold:true,sz:18,color:{rgb:'FF0000'},name:'Calibri'},alignment:{horizontal:'center',vertical:'center'},border};
+
+  // Build vertical data
+  const data=[];
+  const styles=[];
+
+  generated.forEach((ce,evIdx)=>{
+    const roster=generatedRosters[ce.id]||[];
+    const adults=roster.filter(r=>r.section==='adults');
+    const youth=roster.filter(r=>r.section==='youth');
+
+    // Event title row
+    const d=new Date(ce.dateRaw);
+    const dayName=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()];
+    const dayNum=d.getDate();
+    const monthSuffix=dayNum===1||dayNum===21||dayNum===31?'st':dayNum===2||dayNum===22?'nd':dayNum===3||dayNum===23?'rd':'th';
+    const monthName=d.toLocaleDateString('en-US',{month:'long'});
+    const year=d.getFullYear();
+    const evTitle='Team B - '+ce.name+' - '+dayName+' - '+dayNum+monthSuffix+' '+monthName+' '+year+(ce.notes?' ('+ce.notes+')':'');
+    data.push([evTitle,'','']);
+    styles.push('title');
+
+    // Header row
+    data.push(['Duty','Male','Female']);
+    styles.push('header');
+
+    // Adult duties
+    adults.forEach(r=>{
+      const mNames=r.male.length?r.male.join(' / '):'-';
+      const fNames=r.female.length?r.female.join(' / '):'-';
+      data.push([r.duty,mNames,fNames]);
+      styles.push('duty');
+    });
+
+    // Youth section
+    if(youth.length){
+      data.push(['','','']);
+      styles.push('blank');
+      const youthTitle='Team B - '+ce.name+' - '+dayName+' - '+dayNum+monthSuffix+' '+monthName+' '+year+' - Youth Congregation';
+      data.push([youthTitle,'','']);
+      styles.push('title');
+      data.push(['Duty','Male','Female']);
+      styles.push('header');
+      youth.forEach(r=>{
+        const mNames=r.male.length?r.male.join(' / '):'-';
+        const fNames=r.female.length?r.female.join(' / '):'-';
+        data.push([r.duty,mNames,fNames]);
+        styles.push('duty');
+      });
+    }
+
+    // Blank rows between events
+    data.push(['','','']);styles.push('blank');
+    data.push(['','','']);styles.push('blank');
+    if(evIdx<generated.length-1){data.push(['','','']);styles.push('blank');}
+  });
+
+  // Create worksheet
+  const ws=XLSX.utils.aoa_to_sheet(data);
+
+  // Apply styles
+  for(let R=0;R<data.length;R++){
+    const rowType=styles[R];
+    for(let C=0;C<3;C++){
+      const a=XLSX.utils.encode_cell({r:R,c:C});
+      if(!ws[a])ws[a]={v:'',t:'s'};
+      if(rowType==='title') ws[a].s=sTitle;
+      else if(rowType==='header') ws[a].s=sHeader;
+      else if(rowType==='duty') ws[a].s=(C===0)?sDuty:sCell;
+      else ws[a].s={font:{name:'Calibri'}};
+    }
+  }
+
+  // Merges: title rows span A-C
+  const merges=[];
+  for(let R=0;R<data.length;R++){
+    if(styles[R]==='title') merges.push({s:{r:R,c:0},e:{r:R,c:2}});
+  }
+  ws['!merges']=merges;
+
+  // Column widths
+  ws['!cols']=[{wch:30},{wch:45},{wch:45}];
+
+  // Write file
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Roster');
+  const first=cycleEvents[0],last=cycleEvents[cycleEvents.length-1];
+  const fMonth=new Date(first.dateRaw).toLocaleDateString('en-US',{month:'short'});
+  const lMonth=new Date(last.dateRaw).toLocaleDateString('en-US',{month:'short'});
+  const lYear=new Date(last.dateRaw).getFullYear();
+  XLSX.writeFile(wb,'Team_B_Waras_'+fMonth+'_'+lMonth+'_'+lYear+'.xlsx');
+  showToast('Excel exported \u2713');
+}
+
+
+
+
+window.onclick=e=>{if(e.target.classList.contains('modal-overlay'))e.target.classList.remove('open');};
+init();
+</script>
+</body>
+</html>
