@@ -42,27 +42,77 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
 .lbtn:disabled{opacity:.5;cursor:not-allowed;}
 .lerr{color:#f88;font-size:12px;text-align:center;margin-top:10px;min-height:16px;}
 
-/* Dashboard */
-#dashboard{display:none;padding:40px 20px;max-width:900px;margin:0 auto;animation:fadeUp .4s ease;}
-.dash-header{text-align:center;margin-bottom:32px;}
-.dash-header h1{font-family:'Barlow',sans-serif;font-size:24px;font-weight:800;color:var(--blue-lt);text-transform:uppercase;letter-spacing:.04em;}
-.dash-header p{color:var(--dm);font-size:12px;margin-top:4px;}
-.user-bar{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;}
-.user-badge{background:var(--ds2);border:1px solid var(--db);border-radius:20px;padding:6px 14px;font-size:11px;color:var(--dm);}
-.user-badge strong{color:var(--dt);}
-.btn-logout{background:none;border:1px solid rgba(248,120,120,.3);border-radius:6px;padding:5px 12px;font-size:11px;color:#f88;cursor:pointer;font-family:'Lexend',sans-serif;transition:all .2s;}
+/* App Layout */
+#dashboard{display:none;height:100vh;}
+.app-layout{display:flex;height:100%;}
+.sidebar{width:220px;background:var(--ds);border-right:1px solid var(--db);display:flex;flex-direction:column;padding:16px 0;overflow-y:auto;}
+.sb-logo{text-align:center;padding:12px 16px 20px;border-bottom:1px solid var(--db);margin-bottom:12px;}
+.sb-logo .llogo-iv{margin-bottom:6px;}
+.sb-logo h2{font-family:'Barlow',sans-serif;font-size:15px;font-weight:800;color:var(--blue-lt);text-transform:uppercase;letter-spacing:.04em;}
+.sb-logo p{font-size:9px;color:var(--dm);margin-top:2px;}
+.nav-group{padding:0 10px;margin-bottom:16px;}
+.nav-label{font-size:9px;font-weight:700;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;padding:0 8px;margin-bottom:6px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;color:var(--dm);transition:all .15s;text-decoration:none;}
+.nav-item:hover{background:var(--ds2);color:var(--dt);}
+.nav-item.active{background:rgba(79,195,247,0.1);color:var(--blue-lt);border:1px solid rgba(79,195,247,0.2);}
+.nav-item .ni-icon{font-size:14px;width:20px;text-align:center;}
+.sb-footer{margin-top:auto;padding:14px 16px;border-top:1px solid var(--db);}
+.sb-user{font-size:10px;color:var(--dm);margin-bottom:8px;}
+.sb-user strong{color:var(--dt);display:block;font-size:11px;margin-bottom:2px;}
+.btn-logout{background:none;border:1px solid rgba(248,120,120,.3);border-radius:6px;padding:5px 12px;font-size:10px;color:#f88;cursor:pointer;font-family:'Lexend',sans-serif;transition:all .2s;width:100%;}
 .btn-logout:hover{background:rgba(248,120,120,.1);border-color:#f88;}
 
+/* Main content */
+.main-content{flex:1;overflow-y:auto;padding:32px;}
+.page{display:none;animation:fadeUp .3s ease;}
+.page.active{display:block;}
+.page-title{font-family:'Barlow',sans-serif;font-size:20px;font-weight:800;color:var(--blue-lt);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;}
+.page-sub{font-size:11px;color:var(--dm);margin-bottom:24px;}
+
 /* Cards */
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:24px;}
-.card{background:var(--ds);border:1px solid var(--db);border-radius:14px;padding:28px 22px;cursor:pointer;transition:all .22s;text-decoration:none;text-align:center;position:relative;overflow:hidden;}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;}
+.card{background:var(--ds);border:1px solid var(--db);border-radius:14px;padding:24px 20px;cursor:pointer;transition:all .22s;text-decoration:none;text-align:center;position:relative;overflow:hidden;}
 .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.02),transparent);pointer-events:none;}
 .card:hover{border-color:var(--blue-lt);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.4);}
-.card-icon{font-size:2.4rem;margin-bottom:10px;}
-.card-title{font-family:'Barlow',sans-serif;font-size:16px;font-weight:800;color:var(--blue-lt);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
-.card-desc{font-size:11px;color:var(--dm);line-height:1.5;}
-.card-access{margin-top:12px;padding-top:10px;border-top:1px solid var(--db);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+.card-icon{font-size:2rem;margin-bottom:8px;}
+.card-title{font-family:'Barlow',sans-serif;font-size:14px;font-weight:800;color:var(--blue-lt);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
+.card-desc{font-size:10px;color:var(--dm);line-height:1.5;}
+.card-access{margin-top:10px;padding-top:8px;border-top:1px solid var(--db);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
 .access-full{color:var(--green);}.access-view{color:var(--gold);}
+
+/* Calendar */
+.cycle-group{background:var(--ds);border:1px solid var(--db);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.cycle-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;transition:background .15s;}
+.cycle-header:hover{background:var(--ds2);}
+.cycle-label{font-size:12px;font-weight:700;color:var(--dt);}
+.cycle-meta{font-size:10px;color:var(--dm);}
+.team-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;}
+.badge-a{background:rgba(79,195,247,0.12);color:#4FC3F7;border:1px solid rgba(79,195,247,0.25);}
+.badge-b{background:rgba(52,211,153,0.12);color:#34D399;border:1px solid rgba(52,211,153,0.25);}
+.cycle-body{display:none;padding:0 16px 12px;}
+.cycle-body.open{display:block;}
+.cycle-body table{width:100%;border-collapse:collapse;}
+.cycle-body th{font-size:9px;font-weight:700;color:var(--dm);text-transform:uppercase;letter-spacing:.08em;padding:6px 8px;text-align:left;border-bottom:1px solid var(--db);}
+.cycle-body td{font-size:11px;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--dt);}
+
+/* Leadership */
+.contact-card{background:var(--ds);border:1px solid var(--db);border-radius:10px;padding:14px 18px;margin-bottom:8px;display:flex;align-items:center;gap:14px;}
+.contact-card .cc-role{font-size:10px;font-weight:700;color:var(--dm);text-transform:uppercase;letter-spacing:.06em;min-width:160px;}
+.contact-card .cc-name{font-size:12px;font-weight:600;color:var(--dt);flex:1;}
+.contact-card .cc-phone{font-size:11px;color:var(--blue-lt);font-family:monospace;}
+.contact-card .cc-addr{font-size:10px;color:var(--dm);}
+
+/* Docs */
+.doc-section{background:var(--ds);border:1px solid var(--db);border-radius:10px;padding:20px 24px;margin-bottom:12px;}
+.doc-section h3{font-family:'Barlow',sans-serif;font-size:14px;font-weight:700;color:var(--blue-lt);margin-bottom:10px;}
+.doc-section p,.doc-section li{font-size:11px;color:var(--dm);line-height:1.7;}
+.doc-section ul{margin-left:16px;}
+.doc-section table{width:100%;border-collapse:collapse;margin:10px 0;}
+.doc-section th,.doc-section td{font-size:10px;padding:6px 10px;border:1px solid var(--db);text-align:left;}
+.doc-section th{background:var(--ds2);color:var(--dt);font-weight:700;}
+.doc-section td{color:var(--dm);}
+
+@media(max-width:768px){.sidebar{width:60px;}.sidebar .nav-label,.sidebar .sb-logo p,.sidebar .sb-logo h2,.sidebar .sb-user,.nav-item span:not(.ni-icon){display:none;}.nav-item{justify-content:center;padding:10px;}.sb-logo{padding:10px 0;}.main-content{padding:16px;}}
 </style>
 </head>
 <body>
@@ -92,96 +142,192 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
 
 <!-- Dashboard -->
 <div id="dashboard">
-  <div class="dash-header">
-    <div class="llogo-iv" style="margin:0 auto 10px;">IV</div>
-    <h1>IV Roster</h1>
-    <p>Auckland Jamatkhana · Duty Roster Generator</p>
-    <div class="user-bar">
-      <span class="user-badge"><strong id="userName"></strong> · <span id="userRole"></span></span>
-      <button class="btn-logout" onclick="signOut()">Sign Out</button>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="sb-logo">
+        <div class="llogo-iv">IV</div>
+        <h2>IV Roster</h2>
+        <p>Auckland Jamatkhana</p>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Rosters</div>
+        <a class="nav-item active" onclick="navTo('home')"><span class="ni-icon">🏠</span><span>Dashboard</span></a>
+        <a class="nav-item" onclick="navTo('calendar')"><span class="ni-icon">📅</span><span>Year Calendar</span></a>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Info</div>
+        <a class="nav-item" onclick="navTo('leadership')"><span class="ni-icon">👥</span><span>Leadership</span></a>
+        <a class="nav-item" onclick="navTo('docs')"><span class="ni-icon">📖</span><span>Documentation</span></a>
+      </div>
+      <div class="nav-group" id="adminNav" style="display:none;">
+        <div class="nav-label">Admin</div>
+        <a class="nav-item" href="admin.html"><span class="ni-icon">⚙️</span><span>Admin Panel</span></a>
+      </div>
+      <div class="sb-footer">
+        <div class="sb-user"><strong id="userName"></strong><span id="userRole"></span></div>
+        <button class="btn-logout" onclick="signOut()">Sign Out</button>
+      </div>
+    </div>
+    <div class="main-content">
+      <div id="page-home" class="page active"></div>
+      <div id="page-calendar" class="page"></div>
+      <div id="page-leadership" class="page"></div>
+      <div id="page-docs" class="page"></div>
     </div>
   </div>
-  <div class="cards" id="teamCards"></div>
 </div>
 
 <script>
+const CYCLES=[
+  {team:'A',label:'Jan 19 – Feb 16',events:[{date:'2026-01-19',name:'Chandraat'},{date:'2026-01-24',name:'Baithulkhayal'},{date:'2026-01-27',name:'Paanch Baar Saal'},{date:'2026-01-31',name:'Student Mijalis'}]},
+  {team:'B',label:'Feb 17 – Mar 18',events:[{date:'2026-02-17',name:'Chandraat'},{date:'2026-02-21',name:'Baithulkhayal'},{date:'2026-02-25',name:'Paanch Baar Saal'},{date:'2026-02-28',name:'Student Mijalis'},{date:'2026-03-04',name:'Imamat Day'}]},
+  {team:'A',label:'Mar 19 – Apr 16',events:[{date:'2026-03-19',name:'Chandraat'},{date:'2026-03-20',name:'Eid-al-Fitr'},{date:'2026-03-21',name:'Navroz'},{date:'2026-03-22',name:'Baithulkhayal'},{date:'2026-03-27',name:'Paanch Baar Saal'},{date:'2026-03-28',name:'Student Mijalis'},{date:'2026-04-03',name:'Friday Majlis'},{date:'2026-04-10',name:'Friday Majlis'}]},
+  {team:'B',label:'Apr 17 – May 16',events:[{date:'2026-04-17',name:'Chandraat Beej'},{date:'2026-04-18',name:'Baithulkhayal'},{date:'2026-04-24',name:'Friday Majlis'},{date:'2026-04-25',name:'Paanch Baar Saal'},{date:'2026-05-01',name:'Friday Majlis'},{date:'2026-05-02',name:'Student Mijalis'},{date:'2026-05-08',name:'Friday Majlis'},{date:'2026-05-15',name:'Friday Majlis'}]},
+  {team:'A',label:'May 17 – Jun 14',events:[{date:'2026-05-17',name:'Chandraat'},{date:'2026-05-22',name:'Friday Majlis'},{date:'2026-05-23',name:'Baithulkhayal'},{date:'2026-05-25',name:'Paanch Baar Saal'},{date:'2026-05-27',name:'Eid-al-Adha'},{date:'2026-05-29',name:'Friday Majlis'},{date:'2026-05-30',name:'Student Mijalis'},{date:'2026-06-03',name:'Eid-al-Ghadir'},{date:'2026-06-05',name:'Friday Majlis'},{date:'2026-06-12',name:'Friday Majlis'}]},
+  {team:'B',label:'Jun 15 – Jul 13',events:[{date:'2026-06-15',name:'Chandraat'},{date:'2026-06-19',name:'Friday Majlis'},{date:'2026-06-20',name:'Baithulkhayal'},{date:'2026-06-23',name:'Paanch Baar Saal'},{date:'2026-06-26',name:'Friday Majlis'},{date:'2026-06-27',name:'Student Mijalis'},{date:'2026-07-03',name:'Friday Majlis'},{date:'2026-07-10',name:'Friday Majlis'}]},
+  {team:'A',label:'Jul 14 – Aug 12',events:[{date:'2026-07-14',name:'Chandraat'},{date:'2026-07-17',name:'Friday Majlis'},{date:'2026-07-18',name:'Baithulkhayal'},{date:'2026-07-21',name:'Yawm-i Ali'},{date:'2026-07-22',name:'Paanch Baar Saal'},{date:'2026-07-24',name:'Friday Majlis'},{date:'2026-07-25',name:'Student Mijalis'},{date:'2026-07-31',name:'Friday Majlis'},{date:'2026-08-07',name:'Friday Majlis'}]},
+  {team:'B',label:'Aug 13 – Sep 10',events:[{date:'2026-08-13',name:'Chandraat'},{date:'2026-08-15',name:'Baithulkhayal'},{date:'2026-08-21',name:'Paanch Baar Saal'},{date:'2026-08-22',name:'Student Mijalis'},{date:'2026-08-24',name:'Milad al-Nabi'},{date:'2026-08-28',name:'Friday Majlis'},{date:'2026-09-04',name:'Friday Majlis'}]},
+  {team:'A',label:'Sep 11 – Oct 10',events:[{date:'2026-09-11',name:'Chandraat Beej'},{date:'2026-09-12',name:'Baithulkhayal'},{date:'2026-09-19',name:'Paanch Baar Saal'},{date:'2026-09-25',name:'Friday Majlis'},{date:'2026-09-26',name:'Student Mijalis'},{date:'2026-10-02',name:'Friday Majlis'},{date:'2026-10-09',name:'Friday Majlis'}]},
+  {team:'B',label:'Oct 11 – Nov 9',events:[{date:'2026-10-11',name:'Chandraat'},{date:'2026-10-12',name:'Salgirah'},{date:'2026-10-17',name:'Baithulkhayal'},{date:'2026-10-19',name:'Paanch Baar Saal'},{date:'2026-10-23',name:'Friday Majlis'},{date:'2026-10-24',name:'Student Mijalis'},{date:'2026-10-30',name:'Friday Majlis'},{date:'2026-11-06',name:'Friday Majlis'}]},
+  {team:'A',label:'Nov 10 – Dec 8',events:[{date:'2026-11-10',name:'Chandraat'},{date:'2026-11-13',name:'Friday Majlis'},{date:'2026-11-14',name:'Baithulkhayal'},{date:'2026-11-18',name:'Paanch Baar Saal'},{date:'2026-11-20',name:'Friday Majlis'},{date:'2026-11-21',name:'Student Mijalis'},{date:'2026-11-27',name:'Friday Majlis'},{date:'2026-12-04',name:'Friday Majlis'}]},
+  {team:'B',label:'Dec 9 – Jan 2027',events:[{date:'2026-12-09',name:'Chandraat'},{date:'2026-12-11',name:'Friday Majlis'},{date:'2026-12-12',name:'Baithulkhayal'},{date:'2026-12-17',name:'Paanch Baar Saal'},{date:'2026-12-18',name:'Friday Majlis'},{date:'2026-12-19',name:'Student Mijalis'},{date:'2026-12-21',name:'Yawm-i Ali'},{date:'2026-12-25',name:'Friday Majlis'}]},
+];
+const CONTACTS=[
+  {role:'Council Member',name:'Salman Momin',phone:'+64 22 070 6786'},
+  {role:'Asst. CMC',name:'Sameer Hirani',phone:'+64 22 397 9442'},
+  {role:'IVC Director',name:'Irfan Jama',phone:'+64 22 571 3757'},
+  {role:'Deputy Director',name:'Shahzad Saleem',phone:'+64 20 4057 2575'},
+  {role:'Facilitator',name:'Muskaan Somjee',phone:'+64 20 4065 7515'},
+  {role:'Team Lead',name:'Irfan Ismail',phone:'+64 27 258 6371'},
+  {role:'Team Lead',name:'Karishma Dharani',phone:'+64 29 777 8786'},
+  {role:'Team Lead',name:'Rumina Kotadia',phone:'+64 22 137 0350'},
+  {role:'Team Lead',name:'Sadiq Daredia',phone:'+64 22 356 8786'},
+  {role:'Safety Lead',name:'Riyaz Sutar',phone:'+64 20 400 00134'},
+  {role:'Medical Centre',name:'Northcare Accident & Medical',phone:'09-479 7770',addr:'5 Home Place, Rosedale'},
+  {role:'Hospital',name:'North Shore Hospital',phone:'09-486 8900',addr:'124 Shakespeare Rd, Takapuna'},
+  {role:'Police',name:'North Shore Police',phone:'09-477 5000',addr:'52 Parkway Drive, Rosedale'},
+  {role:'Emergency',name:'',phone:'111'},
+  {role:'Non-Emergency',name:'',phone:'105'},
+];
+
+let currentProfile=null;
+
 async function handleLogin(e){
   e.preventDefault();
   const btn=document.getElementById('loginBtn');
   const err=document.getElementById('errorMsg');
-  err.textContent='';
-  btn.disabled=true;btn.textContent='Signing in…';
-
+  err.textContent='';btn.disabled=true;btn.textContent='Signing in…';
   try{
-    await signIn(
-      document.getElementById('emailInput').value.trim(),
-      document.getElementById('passwordInput').value
-    );
+    await signIn(document.getElementById('emailInput').value.trim(),document.getElementById('passwordInput').value);
     await checkAuthAndRoute();
-  }catch(ex){
-    err.textContent=ex.message||'Invalid credentials';
-    btn.disabled=false;btn.textContent='Sign In';
-  }
+  }catch(ex){err.textContent=ex.message||'Invalid credentials';btn.disabled=false;btn.textContent='Sign In';}
 }
 
 async function checkAuthAndRoute(){
   const session=await getSession();
-  if(!session){
-    document.getElementById('loginScreen').style.display='flex';
-    document.getElementById('dashboard').style.display='none';
-    return;
-  }
+  if(!session){document.getElementById('loginScreen').style.display='flex';document.getElementById('dashboard').style.display='none';return;}
   const profile=await getUserProfile();
-  if(!profile){
-    document.getElementById('errorMsg').textContent='No profile found. Contact admin.';
-    document.getElementById('loginScreen').style.display='flex';
-    document.getElementById('dashboard').style.display='none';
-    return;
-  }
-
+  if(!profile){document.getElementById('errorMsg').textContent='No profile found. Contact admin.';document.getElementById('loginScreen').style.display='flex';document.getElementById('dashboard').style.display='none';return;}
+  currentProfile=profile;
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('dashboard').style.display='block';
-  renderDashboard(profile);
-}
-
-function renderDashboard(profile){
   const roleLabels={admin:'Administrator',team_leader:'Team Leader',viewer:'Viewer'};
   document.getElementById('userName').textContent=profile.name||profile.email;
   document.getElementById('userRole').textContent=(roleLabels[profile.role]||profile.role)+(profile.team?' · Team '+profile.team:'');
-
-  const canEditA=profile.role==='admin'||(profile.role==='team_leader'&&profile.team==='A');
-  const canEditB=profile.role==='admin'||(profile.role==='team_leader'&&profile.team==='B');
-
-  let cards='';
-  cards+=`<a href="iv_team_a_roster.html" class="card">
-    <div class="card-icon">🅰️</div>
-    <div class="card-title">Team A</div>
-    <div class="card-desc">Odd cycles · Jan, Mar, May, Jul, Sep, Nov</div>
-    <div class="card-access ${canEditA?'access-full':'access-view'}">${canEditA?'✓ Full Access':'👁 View Only'}</div>
-  </a>`;
-  cards+=`<a href="iv_team_b_roster.html" class="card">
-    <div class="card-icon">🅱️</div>
-    <div class="card-title">Team B</div>
-    <div class="card-desc">Even cycles · Feb, Apr, Jun, Aug, Oct, Dec</div>
-    <div class="card-access ${canEditB?'access-full':'access-view'}">${canEditB?'✓ Full Access':'👁 View Only'}</div>
-  </a>`;
-
-  if(profile.role==='admin'){
-    cards+=`<a href="admin.html" class="card">
-      <div class="card-icon">⚙️</div>
-      <div class="card-title">Admin</div>
-      <div class="card-desc">Users, audit logs, settings</div>
-      <div class="card-access access-full">Admin Only</div>
-    </a>`;
-  }
-
-  document.getElementById('teamCards').innerHTML=cards;
+  if(profile.role==='admin')document.getElementById('adminNav').style.display='block';
+  renderHome();
+  renderCalendar();
+  renderLeadership();
+  renderDocs();
 }
 
-// Check session on load
-checkAuthAndRoute();
+function navTo(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  event.target.closest('.nav-item').classList.add('active');
+}
 
-// Enter key support
+function renderHome(){
+  const p=currentProfile;
+  const canEditA=p.role==='admin'||(p.role==='team_leader'&&p.team==='A');
+  const canEditB=p.role==='admin'||(p.role==='team_leader'&&p.team==='B');
+  document.getElementById('page-home').innerHTML=`
+    <div class="page-title">Dashboard</div>
+    <div class="page-sub">Select a team to manage rosters</div>
+    <div class="cards">
+      <a href="iv_team_a_roster.html" class="card"><div class="card-icon">🅰️</div><div class="card-title">Team A</div><div class="card-desc">Odd cycles · Jan, Mar, May, Jul, Sep, Nov</div><div class="card-access ${canEditA?'access-full':'access-view'}">${canEditA?'✓ Full Access':'👁 View Only'}</div></a>
+      <a href="iv_team_b_roster.html" class="card"><div class="card-icon">🅱️</div><div class="card-title">Team B</div><div class="card-desc">Even cycles · Feb, Apr, Jun, Aug, Oct, Dec</div><div class="card-access ${canEditB?'access-full':'access-view'}">${canEditB?'✓ Full Access':'👁 View Only'}</div></a>
+    </div>`;
+}
+
+function renderCalendar(){
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let h='<div class="page-title">📅 Year Calendar 2026</div><div class="page-sub">All duty cycles for Team A and Team B</div>';
+  CYCLES.forEach((c,i)=>{
+    const badge=c.team==='A'?'badge-a':'badge-b';
+    h+=`<div class="cycle-group"><div class="cycle-header" onclick="this.nextElementSibling.classList.toggle('open')">
+      <span class="cycle-label">Cycle ${i+1}: ${c.label} <span class="team-badge ${badge}">Team ${c.team}</span></span>
+      <span class="cycle-meta">${c.events.length} events</span>
+    </div><div class="cycle-body"><table><thead><tr><th>Date</th><th>Day</th><th>Event</th></tr></thead><tbody>`;
+    c.events.forEach(ev=>{
+      const d=new Date(ev.date);h+=`<tr><td>${d.toLocaleDateString('en-NZ',{day:'numeric',month:'short'})}</td><td>${days[d.getDay()]}</td><td>${ev.name}</td></tr>`;
+    });
+    h+=`</tbody></table></div></div>`;
+  });
+  document.getElementById('page-calendar').innerHTML=h;
+}
+
+function renderLeadership(){
+  let h='<div class="page-title">👥 Leadership & Contacts</div><div class="page-sub">Auckland Jamatkhana — 2-4 Ascension Place, Rosedale</div>';
+  CONTACTS.forEach(c=>{
+    h+=`<div class="contact-card"><span class="cc-role">${c.role}</span><span class="cc-name">${c.name||'—'}</span><span class="cc-phone">${c.phone}</span>${c.addr?'<span class="cc-addr">'+c.addr+'</span>':''}</div>`;
+  });
+  document.getElementById('page-leadership').innerHTML=h;
+}
+
+function renderDocs(){
+  document.getElementById('page-docs').innerHTML=`
+    <div class="page-title">📖 Documentation</div><div class="page-sub">How the roster generator works</div>
+    <div class="doc-section"><h3>Core Concepts</h3><ul>
+      <li><strong>Members</strong>: Name, age, gender, nandi flag</li>
+      <li><strong>Groups</strong>: Child (&lt;12), Youth (12–17), Adult (18+)</li>
+      <li><strong>Duty Cycle</strong>: Alternate lunar months. Team A odd, Team B even. Each starts with Chandraat.</li>
+      <li><strong>Fairness</strong>: Fewest duties → hasn’t done this duty before → random tiebreak</li>
+    </ul></div>
+    <div class="doc-section"><h3>Generation Algorithm</h3><ol>
+      <li>Filter by eligibility (age group, gender, nandi)</li>
+      <li>Exclude members already used in same event</li>
+      <li>Exclude same duty within same cycle (except repeatable)</li>
+      <li>Sort by fairness, pick top N</li>
+      <li>Fallback for hard-required duties (Nandi)</li>
+    </ol><p><strong>Repeatable:</strong> Nandi Line, Nandi Passing, Nandi Set-up, Nandi Centre, Nandi Trolley, Nandi Distribution</p></div>
+    <div class="doc-section"><h3>Duty Rules</h3><table>
+      <thead><tr><th>Duty</th><th>Rules</th></tr></thead><tbody>
+      <tr><td>Nandi</td><td>2 Nandi-experienced Adults. Random mix. Hard-required.</td></tr>
+      <tr><td>Nandi Labelling</td><td>1 Adult + 1 Youth. Either 1M+1F or 2F.</td></tr>
+      <tr><td>Nandi Line</td><td>4–10 per gender. Absorbs remaining. Repeatable.</td></tr>
+      <tr><td>Nandi Passing</td><td>3–8 per gender. Absorbs Children/Youth. Repeatable.</td></tr>
+      <tr><td>Prayer Hall Entrance</td><td>2M + 2F Children. Fallback Youth.</td></tr>
+      <tr><td>Shoe Entrance</td><td>1M + 1F Youth. Fallback Adults.</td></tr>
+      <tr><td>Seating & Discipline</td><td>1 Adult + 1 Youth per gender.</td></tr>
+      <tr><td>Sukreet</td><td>60% chance 1 Adult + 1 Youth, else 2 Adults per gender.</td></tr>
+      <tr><td>Safety Exit Door</td><td>Female only. 50% chance 1 Adult + 1 Youth.</td></tr>
+      <tr><td>Chai Station</td><td>Adults only. Friday & Chandraat only.</td></tr>
+      <tr><td>Water Station</td><td>1M + 1F. Chandraat & Navroz only.</td></tr>
+      </tbody></table></div>
+    <div class="doc-section"><h3>Features</h3><ul>
+      <li>⚡ Generate All — roster entire cycle at once</li>
+      <li>📊 Export Excel — formatted .xlsx with all events</li>
+      <li>📷 Export Image — PNG screenshot of roster</li>
+      <li>↔ Substitutions — swap members with eligibility checks</li>
+      <li>📈 Fairness views — Per Person, Per Duty, Gaps</li>
+      <li>🔄 Realtime sync — changes appear on all devices instantly</li>
+      <li>🔒 Role-based access — Admin, Team Leader, Viewer</li>
+    </ul></div>`;
+}
+
+checkAuthAndRoute();
 document.getElementById('emailInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('passwordInput').focus();});
 </script>
 </body>
