@@ -171,39 +171,53 @@ async function addUser(){
   const status=document.getElementById('addUserStatus');
 
   if(!name||!email||!pass){toast('Fill all fields','err');return;}
+  if(pass.length<6){toast('Password must be at least 6 characters','err');return;}
   status.textContent='Creating user…';status.style.color='#0068b3';
 
   try{
-    // Create auth user via Supabase admin (requires service role — may fail from client)
-    // Fallback: create user manually in Supabase dashboard, then just insert profile
-    const{data:authData,error:authErr}=await _supabase.auth.admin.createUser({
-      email,password:pass,email_confirm:true,
-      user_metadata:{name}
+    // Sign up the user (public API — no service role needed)
+    // We temporarily sign them up, then sign back in as admin
+    const adminSession = await getSession();
+
+    const{data:signUpData,error:signUpErr}=await _supabase.auth.signUp({
+      email,
+      password:pass,
+      options:{ data:{name} }
     });
 
-    if(authErr){
-      // If admin API not available, show instructions
-      if(authErr.message.includes('not allowed')||authErr.status===403){
-        status.textContent='⚠ Create user in Supabase Dashboard → Auth → Users, then paste UUID below.';
-        status.style.color='var(--gold)';
-        toast('Admin API not available from client — create user in Supabase Dashboard','err');
-        return;
-      }
-      throw authErr;
+    if(signUpErr) throw signUpErr;
+    if(!signUpData.user) throw new Error('User creation failed');
+
+    // Insert profile with the new user's ID
+    const{error:profileErr}=await _supabase.from('profiles').insert({
+      id:signUpData.user.id, email, name, role, team
+    });
+    if(profileErr) throw profileErr;
+
+    // Restore admin session (signUp may have switched the active session)
+    if(adminSession){
+      await _supabase.auth.setSession({
+        access_token:adminSession.access_token,
+        refresh_token:adminSession.refresh_token
+      });
     }
 
-    // Insert profile
-    await _supabase.from('profiles').insert({
-      id:authData.user.id, email, name, role, team
-    });
+    // Clear form
+    document.getElementById('newName').value='';
+    document.getElementById('newEmail').value='';
+    document.getElementById('newPass').value='';
 
-    await logAudit('Created user: '+name,'users','Email: '+email+', Role: '+role);
+    await logAudit('Created user: '+name,'users','Email: '+email+', Role: '+role+', Team: '+(team||'All'));
     await loadAllUsers();
     renderUsers();
+    status.textContent='✓ User created!';
+    status.style.color='#2d7a3a';
     toast('✓ User created: '+name);
   }catch(e){
-    status.textContent='Error: '+e.message;status.style.color='var(--red)';
-    toast('Failed: '+e.message,'err');
+    console.error('addUser error:',e);
+    status.textContent='Error: '+(e.message||e);
+    status.style.color='#c0392b';
+    toast('Failed: '+(e.message||e),'err');
   }
 }
 
