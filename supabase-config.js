@@ -139,3 +139,31 @@ function stopRealtime(){
   _realtimeChannels.forEach(ch=>{ try{_supabase.removeChannel(ch);}catch(e){} });
   _realtimeChannels=[];
 }
+
+
+// ══════════════════════════════════════
+// MEMBER STATE PERSISTENCE
+// ══════════════════════════════════════
+async function dbSaveMemberState(team, memberState) {
+  if(!_supabase || SUPABASE_URL.includes('YOUR_PROJECT')) return;
+  pauseRealtime(2000);
+  setSyncStatus('saving');
+  try {
+    const { error } = await _supabase.from('app_settings').upsert({
+      key: 'member_state_' + team,
+      value: JSON.stringify(memberState),
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'key' });
+    if (error) throw error;
+    setSyncStatus('ok');
+  } catch(e) { console.error('Member state save failed:', e); setSyncStatus('error'); }
+}
+
+async function dbLoadMemberState(team) {
+  if(!_supabase || SUPABASE_URL.includes('YOUR_PROJECT')) return null;
+  try {
+    const { data, error } = await _supabase.from('app_settings').select('value').eq('key', 'member_state_' + team).maybeSingle();
+    if (error || !data) return null;
+    return typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
+  } catch(e) { return null; }
+}

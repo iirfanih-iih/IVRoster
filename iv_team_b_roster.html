@@ -400,6 +400,7 @@ async function init() {
   setupEvents();
   if (!(await loadState())) { resetCycle(true); }
   recalculateCountsFromState();
+  await loadMemberState();
   updateMemberSummary();
   renderEventList();
   document.getElementById('addEventBtn').addEventListener('click', openAddEventModal);
@@ -805,19 +806,54 @@ function renderMembersHTML(){
 
 function toggleMemberActive(gender,idx,checked){
   MEMBERS[gender][idx].inactive=!checked;
-  saveState();
+  saveMemberState();
   updateMemberSummary();
   showToast(MEMBERS[gender][idx].name+(checked?' activated':' deactivated'));
 }
 function toggleMemberNandi(gender,idx,checked){
   MEMBERS[gender][idx].nandi=checked;
-  saveState();
+  saveMemberState();
   updateMemberSummary();
   showToast(MEMBERS[gender][idx].name+(checked?' can do Nandi':' removed from Nandi'));
 }
 function updateMemberNote(gender,idx,val){
   MEMBERS[gender][idx].note=val;
-  saveState();
+  saveMemberState();
+}
+
+function getMemberState(){
+  const state={};
+  ['male','female'].forEach(g=>{
+    MEMBERS[g].forEach(m=>{
+      if(m.inactive||m.note||m.nandi!==m._origNandi){
+        state[m.name]={inactive:!!m.inactive,nandi:m.nandi,note:m.note||''};
+      }
+    });
+  });
+  return state;
+}
+function applyMemberState(state){
+  if(!state)return;
+  ['male','female'].forEach(g=>{
+    MEMBERS[g].forEach(m=>{
+      if(state[m.name]){
+        if(state[m.name].inactive!==undefined) m.inactive=state[m.name].inactive;
+        if(state[m.name].nandi!==undefined) m.nandi=state[m.name].nandi;
+        if(state[m.name].note!==undefined) m.note=state[m.name].note;
+      }
+    });
+  });
+}
+async function saveMemberState(){
+  const state=getMemberState();
+  localStorage.setItem('memberState_'+CURRENT_TEAM,JSON.stringify(state));
+  await dbSaveMemberState(CURRENT_TEAM,state);
+}
+async function loadMemberState(){
+  const dbState=await dbLoadMemberState(CURRENT_TEAM);
+  if(dbState){applyMemberState(dbState);return;}
+  const local=localStorage.getItem('memberState_'+CURRENT_TEAM);
+  if(local)applyMemberState(JSON.parse(local));
 }
 
 let fairnessView='person';
