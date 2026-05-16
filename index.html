@@ -169,6 +169,16 @@ function renderDashboard(profile) {
     <div class="card-access">${accessB}</div>
   </a>`;
 
+  // Admin panel card (admin only)
+  if(profile.role === 'admin'){
+    cards += `<a href="admin.html" class="card">
+      <div class="card-icon">⚙️</div>
+      <div class="card-title">Admin Panel</div>
+      <div class="card-desc">User management, audit logs, settings</div>
+      <div class="card-access"><span class="access-full">Admin Only</span></div>
+    </a>`;
+  }
+
   document.getElementById('teamCards').innerHTML = cards;
 }
 
