@@ -100,6 +100,7 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
 .contact-card .cc-role{font-size:10px;font-weight:700;color:var(--dm);text-transform:uppercase;letter-spacing:.06em;min-width:160px;}
 .contact-card .cc-name{font-size:12px;font-weight:600;color:var(--dt);flex:1;}
 .contact-card .cc-phone{font-size:11px;color:var(--blue-lt);font-family:monospace;}
+.contact-card .cc-email{font-size:10px;color:var(--green);}
 .contact-card .cc-addr{font-size:10px;color:var(--dm);}
 
 /* Docs */
@@ -193,16 +194,16 @@ const CYCLES=[
   {team:'B',label:'Dec 9 – Jan 2027',events:[{date:'2026-12-09',name:'Chandraat'},{date:'2026-12-11',name:'Friday Majlis'},{date:'2026-12-12',name:'Baithulkhayal'},{date:'2026-12-17',name:'Paanch Baar Saal'},{date:'2026-12-18',name:'Friday Majlis'},{date:'2026-12-19',name:'Student Mijalis'},{date:'2026-12-21',name:'Yawm-i Ali'},{date:'2026-12-25',name:'Friday Majlis'}]},
 ];
 const CONTACTS=[
-  {role:'Council Member',name:'Salman Momin',phone:'+64 22 070 6786'},
-  {role:'Asst. CMC',name:'Sameer Hirani',phone:'+64 22 397 9442'},
-  {role:'IVC Director',name:'Irfan Jama',phone:'+64 22 571 3757'},
-  {role:'Deputy Director',name:'Shahzad Saleem',phone:'+64 20 4057 2575'},
-  {role:'Facilitator',name:'Muskaan Somjee',phone:'+64 20 4065 7515'},
-  {role:'Team Lead',name:'Irfan Ismail',phone:'+64 27 258 6371'},
-  {role:'Team Lead',name:'Karishma Dharani',phone:'+64 29 777 8786'},
-  {role:'Team Lead',name:'Rumina Kotadia',phone:'+64 22 137 0350'},
-  {role:'Team Lead',name:'Sadiq Daredia',phone:'+64 22 356 8786'},
-  {role:'Safety Lead',name:'Riyaz Sutar',phone:'+64 20 400 00134'},
+  {role:'Council Member',name:'Salman Momin',phone:'+64 22 070 6786',email:'salman.momin@example.com'},
+  {role:'Asst. CMC',name:'Sameer Hirani',phone:'+64 22 397 9442',email:'sameer.hirani@example.com'},
+  {role:'IVC Director',name:'Irfan Jama',phone:'+64 22 571 3757',email:'irfan.jama@example.com'},
+  {role:'Deputy Director',name:'Shahzad Saleem',phone:'+64 20 4057 2575',email:'shahzad.saleem@example.com'},
+  {role:'Facilitator',name:'Muskaan Somjee',phone:'+64 20 4065 7515',email:'muskaan.somjee@example.com'},
+  {role:'Team Lead',name:'Irfan Ismail',phone:'+64 27 258 6371',email:'irfan.ismail@example.com'},
+  {role:'Team Lead',name:'Karishma Dharani',phone:'+64 29 777 8786',email:'karishma.dharani@example.com'},
+  {role:'Team Lead',name:'Rumina Kotadia',phone:'+64 22 137 0350',email:'rumina.kotadia@example.com'},
+  {role:'Team Lead',name:'Sadiq Daredia',phone:'+64 22 356 8786',email:'sadiq.daredia@example.com'},
+  {role:'Safety Lead',name:'Riyaz Sutar',phone:'+64 20 400 00134',email:'riyaz.sutar@example.com'},
   {role:'Medical Centre',name:'Northcare Accident & Medical',phone:'09-479 7770',addr:'5 Home Place, Rosedale'},
   {role:'Hospital',name:'North Shore Hospital',phone:'09-486 8900',addr:'124 Shakespeare Rd, Takapuna'},
   {role:'Police',name:'North Shore Police',phone:'09-477 5000',addr:'52 Parkway Drive, Rosedale'},
@@ -281,7 +282,7 @@ function renderCalendar(){
 function renderLeadership(){
   let h='<div class="page-title">👥 Leadership & Contacts</div><div class="page-sub">Auckland Jamatkhana — 2-4 Ascension Place, Rosedale</div>';
   CONTACTS.forEach(c=>{
-    h+=`<div class="contact-card"><span class="cc-role">${c.role}</span><span class="cc-name">${c.name||'—'}</span><span class="cc-phone">${c.phone}</span>${c.addr?'<span class="cc-addr">'+c.addr+'</span>':''}</div>`;
+    h+=`<div class="contact-card"><span class="cc-role">${c.role}</span><span class="cc-name">${c.name||'—'}</span><span class="cc-phone">${c.phone}</span>${c.email?'<span class="cc-email">'+c.email+'</span>':''}${c.addr?'<span class="cc-addr">'+c.addr+'</span>':''}</div>`;
   });
   document.getElementById('page-leadership').innerHTML=h;
 }
