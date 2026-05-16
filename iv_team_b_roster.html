@@ -175,6 +175,32 @@ thead{position:sticky;top:0;z-index:1;}
 <div class="toast" id="toast"></div>
 <script>
 // ══════════════════════════════════════
+// AUTH & PERMISSIONS
+// ══════════════════════════════════════
+const CURRENT_TEAM = 'B';
+let canEdit = true;
+let currentProfile = null;
+
+async function checkAuth() {
+  try {
+    const session = await getSession();
+    if (!session) { window.location.href = 'index.html'; return false; }
+    currentProfile = await getUserProfile();
+    if (!currentProfile) { window.location.href = 'index.html'; return false; }
+    canEdit = currentProfile.role === 'admin' || (currentProfile.role === 'team_leader' && currentProfile.team === CURRENT_TEAM);
+    if (!canEdit) document.body.classList.add('view-only');
+    const headerDiv = document.querySelector('header div');
+    if (headerDiv) {
+      headerDiv.innerHTML += `<p style="font-size:.7rem;color:var(--text-light);margin-top:2px;">${currentProfile.name || currentProfile.email} · ${canEdit ? 'Full Access' : 'View Only'} <a href="#" onclick="signOut()" style="color:var(--primary);margin-left:8px;">Sign Out</a></p>`;
+    }
+    return true;
+  } catch(e) {
+    if (SUPABASE_URL.includes('YOUR_PROJECT')) { canEdit = true; return true; }
+    window.location.href = 'index.html'; return false;
+  }
+}
+
+// ══════════════════════════════════════
 // MEMBERS
 // ══════════════════════════════════════
 const MEMBERS = {
@@ -369,7 +395,8 @@ const DUTY_ASSIGNMENT_CONFIG = {
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
-function init() {
+async function init() {
+  await checkAuth();
   setupEvents();
   if (!loadState()) { resetCycle(true); }
   recalculateCountsFromState();
