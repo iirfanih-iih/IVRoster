@@ -1,9 +1,10 @@
 // ══════════════════════════════════════
 // SUPABASE CONFIG
-// Replace these with your actual Supabase project values
+// Get these from: Supabase Dashboard → Settings → API
 // ══════════════════════════════════════
-const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+// TODO: Replace with your actual Supabase project values
+const SUPABASE_URL = 'https://pvopusxiipswhcjlspfh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2b3B1c3hpaXBzd2hjamxzcGZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4OTEwMDcsImV4cCI6MjA5NDQ2NzAwN30.rfob3VgKdfwNKWiVi5YfEkUvS6iTvW4nWtVTPaOmGrk';
 
 // Initialize Supabase client
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
