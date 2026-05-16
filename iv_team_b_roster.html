@@ -618,8 +618,9 @@ function renderMainForEvent(i){
       renderStatsHTML(ev);
     } else {
       tc.innerHTML=`<div class="empty-state"><div class="icon">⚡</div><h3>Ready to Generate</h3>
-        <p>Click <strong>Generate</strong> for this event, or <strong>⚡⚡ Generate All</strong> to roster the entire current cycle.<br><br>
-        Rules: fairness across all members · no repeat of major duties · group eligibility (child/youth/adult).</p></div>`;
+        <p>Click <strong>Generate</strong> for auto-assignment, or <strong>✍️ Manual Entry</strong> to fill in names yourself.<br><br>
+        Rules: fairness across all members · no repeat of major duties · group eligibility (child/youth/adult).</p>
+        <div style="margin-top:16px;"><button class="btn-generate" onclick="showManualEntry(${i})" style="background:var(--bg-alt);color:var(--primary);border:1px solid var(--primary);">✍️ Manual Entry</button></div></div>`;
     }
   } else if (currentTab === 'overview') {
     const period = getEventPeriodKey(events[i]);
@@ -734,6 +735,50 @@ function _generateRosterLogic(ev) {
     }
   }
   return roster;
+}
+
+function showManualEntry(i){
+  const ev=events[i];
+  const type=ev.type;
+  const dutyList=(DUTIES[type]||DUTIES.paanch).slice();
+  if(hasCongregation(ev)) dutyList.push(...YOUTH_DUTIES);
+  const allMembers=[...MEMBERS.male.filter(m=>!m.inactive).map(m=>m.name),...MEMBERS.female.filter(m=>!m.inactive).map(m=>m.name)];
+  const datalist=`<datalist id="memberList">${allMembers.map(n=>'<option value="'+n+'">').join('')}</datalist>`;
+  let h=datalist+`<div class="roster-card"><div class="roster-card-header"><h2>\u270d\ufe0f Manual Entry \u2014 ${ev.name}</h2><span>${ev.date}</span></div>
+    <table><thead><tr><th>Duty</th><th>Male</th><th>Female</th></tr></thead><tbody>`;
+  dutyList.forEach((d,idx)=>{
+    h+=`<tr><td><span class="duty-name">${d}</span></td>
+      <td><input type="text" id="me_m_${idx}" list="memberList" placeholder="Name / Name / ..." style="width:100%;padding:6px 8px;border:1px solid var(--border-color);border-radius:6px;font-size:.78rem;font-family:'DM Sans',sans-serif;outline:none;"></td>
+      <td><input type="text" id="me_f_${idx}" list="memberList" placeholder="Name / Name / ..." style="width:100%;padding:6px 8px;border:1px solid var(--border-color);border-radius:6px;font-size:.78rem;font-family:'DM Sans',sans-serif;outline:none;"></td>
+    </tr>`;
+  });
+  h+=`</tbody></table><div style="padding:14px 18px;border-top:1px solid var(--border-color);display:flex;gap:8px;">
+    <button class="btn-generate" onclick="saveManualEntry(${i})">\ud83d\udcbe Save Manual Roster</button>
+    <button class="btn-generate" style="background:var(--bg-alt);color:var(--text-light);border:1px solid var(--border-color);" onclick="renderMainForEvent(${i})">Cancel</button>
+  </div></div>`;
+  document.getElementById('tabContent').innerHTML=h;
+}
+
+function saveManualEntry(i){
+  const ev=events[i];
+  const type=ev.type;
+  const dutyList=(DUTIES[type]||DUTIES.paanch).slice();
+  if(hasCongregation(ev)) dutyList.push(...YOUTH_DUTIES);
+  const roster=[];
+  dutyList.forEach((d,idx)=>{
+    const mVal=document.getElementById('me_m_'+idx).value.trim();
+    const fVal=document.getElementById('me_f_'+idx).value.trim();
+    const male=mVal?mVal.split('/').map(s=>s.trim()).filter(Boolean):[];
+    const female=fVal?fVal.split('/').map(s=>s.trim()).filter(Boolean):[];
+    const section=YOUTH_DUTIES.includes(d)?'youth':'adults';
+    roster.push({duty:d,male,female,isNandi:d==='Nandi',section});
+  });
+  generatedRosters[ev.id]=roster;
+  saveState();
+  recalculateCountsFromState();
+  renderEventList();
+  renderMainForEvent(i);
+  showToast('Manual roster saved \u2713');
 }
 
 function generateRoster(i) {
