@@ -175,34 +175,18 @@ async function addUser(){
   status.textContent='Creating user…';status.style.color='#0068b3';
 
   try{
-    // Sign up the user (public API — no service role needed)
-    // We temporarily sign them up, then sign back in as admin
-    const adminSession = await getSession();
-
-    const{data:signUpData,error:signUpErr}=await _supabase.auth.signUp({
-      email,
-      password:pass,
-      options:{ data:{name} }
+    const session = await getSession();
+    const res = await fetch(SUPABASE_URL+'/functions/v1/create-user', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+session.access_token
+      },
+      body:JSON.stringify({email,password:pass,name,role,team})
     });
+    const result = await res.json();
+    if(!result.success) throw new Error(result.error);
 
-    if(signUpErr) throw signUpErr;
-    if(!signUpData.user) throw new Error('User creation failed');
-
-    // Insert profile with the new user's ID
-    const{error:profileErr}=await _supabase.from('profiles').insert({
-      id:signUpData.user.id, email, name, role, team
-    });
-    if(profileErr) throw profileErr;
-
-    // Restore admin session (signUp may have switched the active session)
-    if(adminSession){
-      await _supabase.auth.setSession({
-        access_token:adminSession.access_token,
-        refresh_token:adminSession.refresh_token
-      });
-    }
-
-    // Clear form
     document.getElementById('newName').value='';
     document.getElementById('newEmail').value='';
     document.getElementById('newPass').value='';

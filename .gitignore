@@ -2,3 +2,4 @@
 .vscode/
 exports/
 *.xlsx
+supabase/.temp/
