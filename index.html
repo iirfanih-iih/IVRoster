@@ -3,187 +3,186 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IV Roster Generator</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>IV Roster — Auckland Jamatkhana</title>
+<meta property="og:title" content="IV Roster — Auckland Jamatkhana">
+<meta property="og:description" content="Ismaili Volunteers Roster Generator">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230A1F3D'/%3E%3Ctext x='16' y='22' font-family='sans-serif' font-size='14' font-weight='900' fill='%234FC3F7' text-anchor='middle'%3EIV%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&family=Barlow:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:#f0f0f0;min-height:100vh;display:flex;align-items:center;justify-content:center;}
-.login-container{background:#fff;border-radius:16px;padding:40px 36px;width:380px;max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,0.1);text-align:center;}
-.logo{height:60px;margin-bottom:16px;}
-h1{font-family:'Playfair Display',serif;font-size:1.5rem;color:#0068b3;margin-bottom:4px;}
-.subtitle{font-size:.8rem;color:#666;margin-bottom:28px;}
-.form-group{margin-bottom:16px;text-align:left;}
-.form-group label{font-size:.75rem;color:#666;display:block;margin-bottom:5px;}
-.form-group input{width:100%;padding:11px 14px;border:1px solid #ddd;border-radius:8px;font-size:.85rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s;}
-.form-group input:focus{border-color:#0068b3;}
-.btn-login{width:100%;padding:12px;background:#0068b3;color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;margin-top:8px;}
-.btn-login:hover{background:#4da0d8;}
-.btn-login:disabled{opacity:.5;cursor:not-allowed;}
-.error-msg{color:#c0392b;font-size:.78rem;margin-top:12px;display:none;}
-.loading{display:none;text-align:center;padding:40px;color:#666;font-size:.85rem;}
-.dashboard{display:none;max-width:900px;margin:0 auto;padding:20px;}
-.dash-header{text-align:center;margin-bottom:24px;}
-.dash-header h1{margin-bottom:4px;}
-.user-info{font-size:.78rem;color:#666;margin-bottom:6px;}
-.btn-logout{background:none;border:1px solid #ddd;border-radius:6px;padding:5px 12px;font-size:.72rem;color:#666;cursor:pointer;font-family:'DM Sans',sans-serif;}
-.btn-logout:hover{border-color:#c0392b;color:#c0392b;}
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
-.card{background:#fff;border:1px solid #ddd;border-radius:12px;padding:24px 18px;cursor:pointer;transition:all .2s;text-decoration:none;color:#333;box-shadow:0 2px 8px rgba(0,0,0,0.06);text-align:center;}
-.card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,104,179,0.15);border-color:#0068b3;}
-.card.disabled{opacity:.5;cursor:not-allowed;pointer-events:none;}
-.card-icon{font-size:2.2rem;margin-bottom:8px;}
-.card-title{font-family:'Playfair Display',serif;font-size:1.2rem;color:#0068b3;margin-bottom:4px;}
-.card-desc{font-size:.75rem;color:#666;line-height:1.4;}
-.card-access{font-size:.68rem;margin-top:8px;padding-top:8px;border-top:1px solid #eee;font-weight:600;}
-.access-full{color:#2d7a3a;}
-.access-view{color:#b36800;}
-.access-none{color:#999;}
-@media(max-width:500px){.cards{grid-template-columns:1fr;}}
+:root{
+  --dp:#020B18;--ds:#071628;--ds2:#0D2040;
+  --dt:#E8F4FD;--dm:#7AAECB;--db:rgba(79,195,247,0.18);
+  --blue:#1565C0;--blue2:#1976D2;--blue-lt:#4FC3F7;
+  --navy:#0C2461;--green:#34D399;--green-bg:rgba(52,211,153,0.12);--green-bd:rgba(52,211,153,0.3);
+  --gold:#F59E0B;--gold-bg:rgba(245,158,11,0.12);--gold-bd:rgba(245,158,11,0.3);
+  --r:9px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-height:100vh;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--dp);}::-webkit-scrollbar-thumb{background:var(--blue);border-radius:3px;}
+
+/* Login */
+#loginScreen{position:fixed;inset:0;background:var(--dp);z-index:1000;display:flex;align-items:center;justify-content:center;
+  background-image:radial-gradient(ellipse at 20% 50%,rgba(21,101,192,.18) 0%,transparent 60%);}
+.lbox{background:var(--ds);border:1px solid var(--db);border-radius:16px;padding:44px 40px;width:400px;max-width:92vw;box-shadow:0 24px 64px rgba(0,0,0,.6);animation:fadeUp .5s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.llogo{text-align:center;margin-bottom:28px;}
+.llogo-iv{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;background:var(--blue2);border-radius:8px;font-family:'Barlow',sans-serif;font-weight:900;font-size:18px;color:#fff;margin-bottom:10px;}
+.llogo h1{font-family:'Barlow',sans-serif;font-size:22px;font-weight:800;color:var(--blue-lt);text-transform:uppercase;letter-spacing:.04em;}
+.llogo p{color:var(--dm);font-size:12px;margin-top:3px;}
+.lfg{margin-bottom:15px;}
+.lfg label{display:block;font-size:10px;font-weight:700;color:var(--dm);text-transform:uppercase;letter-spacing:.09em;margin-bottom:6px;}
+.lfg input{width:100%;background:var(--ds2);border:1px solid var(--db);border-radius:var(--r);padding:10px 14px;color:var(--dt);font-family:'Lexend',sans-serif;font-size:13px;outline:none;transition:border .2s;}
+.lfg input:focus{border-color:var(--blue-lt);}
+.lbtn{width:100%;background:linear-gradient(135deg,var(--navy),var(--blue2));color:#fff;border:none;border-radius:var(--r);padding:12px;font-family:'Lexend',sans-serif;font-weight:700;font-size:14px;cursor:pointer;margin-top:6px;transition:box-shadow .2s;}
+.lbtn:hover{box-shadow:0 6px 20px rgba(21,101,192,.4);}
+.lbtn:disabled{opacity:.5;cursor:not-allowed;}
+.lerr{color:#f88;font-size:12px;text-align:center;margin-top:10px;min-height:16px;}
+
+/* Dashboard */
+#dashboard{display:none;padding:40px 20px;max-width:900px;margin:0 auto;animation:fadeUp .4s ease;}
+.dash-header{text-align:center;margin-bottom:32px;}
+.dash-header h1{font-family:'Barlow',sans-serif;font-size:24px;font-weight:800;color:var(--blue-lt);text-transform:uppercase;letter-spacing:.04em;}
+.dash-header p{color:var(--dm);font-size:12px;margin-top:4px;}
+.user-bar{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;}
+.user-badge{background:var(--ds2);border:1px solid var(--db);border-radius:20px;padding:6px 14px;font-size:11px;color:var(--dm);}
+.user-badge strong{color:var(--dt);}
+.btn-logout{background:none;border:1px solid rgba(248,120,120,.3);border-radius:6px;padding:5px 12px;font-size:11px;color:#f88;cursor:pointer;font-family:'Lexend',sans-serif;transition:all .2s;}
+.btn-logout:hover{background:rgba(248,120,120,.1);border-color:#f88;}
+
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:24px;}
+.card{background:var(--ds);border:1px solid var(--db);border-radius:14px;padding:28px 22px;cursor:pointer;transition:all .22s;text-decoration:none;text-align:center;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.02),transparent);pointer-events:none;}
+.card:hover{border-color:var(--blue-lt);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.4);}
+.card-icon{font-size:2.4rem;margin-bottom:10px;}
+.card-title{font-family:'Barlow',sans-serif;font-size:16px;font-weight:800;color:var(--blue-lt);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
+.card-desc{font-size:11px;color:var(--dm);line-height:1.5;}
+.card-access{margin-top:12px;padding-top:10px;border-top:1px solid var(--db);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;}
+.access-full{color:var(--green);}.access-view{color:var(--gold);}
 </style>
 </head>
 <body>
 
-<!-- Login Form -->
-<div class="login-container" id="loginView">
-  <img src="iv-logo.png" alt="IV Logo" class="logo">
-  <h1>Auckland Ismaili Volunteers</h1>
-  <p class="subtitle">Roster Generator · Sign In</p>
-  <form id="loginForm" onsubmit="handleLogin(event)">
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="emailInput" placeholder="your@email.com" required>
+<!-- Login -->
+<div id="loginScreen">
+  <div class="lbox">
+    <div class="llogo">
+      <div class="llogo-iv">IV</div>
+      <h1>IV Roster</h1>
+      <p>Auckland Jamatkhana · Ismaili Volunteers</p>
     </div>
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" id="passwordInput" placeholder="••••••••" required>
-    </div>
-    <button type="submit" class="btn-login" id="loginBtn">Sign In</button>
-  </form>
-  <div class="error-msg" id="errorMsg"></div>
+    <form onsubmit="handleLogin(event)">
+      <div class="lfg">
+        <label>Email</label>
+        <input id="emailInput" type="email" placeholder="your@email.com" autocomplete="username" required>
+      </div>
+      <div class="lfg">
+        <label>Password</label>
+        <input id="passwordInput" type="password" placeholder="••••••••" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="lbtn" id="loginBtn">Sign In</button>
+    </form>
+    <div class="lerr" id="errorMsg"></div>
+  </div>
 </div>
 
-<!-- Loading -->
-<div class="loading" id="loadingView">Checking session...</div>
-
-<!-- Dashboard (after login) -->
-<div class="dashboard" id="dashboardView">
+<!-- Dashboard -->
+<div id="dashboard">
   <div class="dash-header">
-    <img src="iv-logo.png" alt="IV Logo" style="height:50px;margin-bottom:10px;">
-    <h1>Auckland Ismaili Volunteers</h1>
-    <div class="user-info" id="userInfo"></div>
-    <button class="btn-logout" onclick="signOut()">Sign Out</button>
+    <div class="llogo-iv" style="margin:0 auto 10px;">IV</div>
+    <h1>IV Roster</h1>
+    <p>Auckland Jamatkhana · Duty Roster Generator</p>
+    <div class="user-bar">
+      <span class="user-badge"><strong id="userName"></strong> · <span id="userRole"></span></span>
+      <button class="btn-logout" onclick="signOut()">Sign Out</button>
+    </div>
   </div>
   <div class="cards" id="teamCards"></div>
 </div>
 
 <script>
-async function handleLogin(e) {
+async function handleLogin(e){
   e.preventDefault();
-  const btn = document.getElementById('loginBtn');
-  const errEl = document.getElementById('errorMsg');
-  errEl.style.display = 'none';
-  btn.disabled = true;
-  btn.textContent = 'Signing in...';
+  const btn=document.getElementById('loginBtn');
+  const err=document.getElementById('errorMsg');
+  err.textContent='';
+  btn.disabled=true;btn.textContent='Signing in…';
 
-  try {
+  try{
     await signIn(
       document.getElementById('emailInput').value.trim(),
       document.getElementById('passwordInput').value
     );
     await checkAuthAndRoute();
-  } catch (err) {
-    errEl.textContent = err.message || 'Invalid credentials';
-    errEl.style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = 'Sign In';
+  }catch(ex){
+    err.textContent=ex.message||'Invalid credentials';
+    btn.disabled=false;btn.textContent='Sign In';
   }
 }
 
-async function checkAuthAndRoute() {
-  const loginView = document.getElementById('loginView');
-  const loadingView = document.getElementById('loadingView');
-  const dashboardView = document.getElementById('dashboardView');
-
-  loginView.style.display = 'none';
-  loadingView.style.display = 'block';
-
-  const session = await getSession();
-  if (!session) {
-    loadingView.style.display = 'none';
-    loginView.style.display = 'block';
-    document.body.style.display = 'flex';
+async function checkAuthAndRoute(){
+  const session=await getSession();
+  if(!session){
+    document.getElementById('loginScreen').style.display='flex';
+    document.getElementById('dashboard').style.display='none';
+    return;
+  }
+  const profile=await getUserProfile();
+  if(!profile){
+    document.getElementById('errorMsg').textContent='No profile found. Contact admin.';
+    document.getElementById('loginScreen').style.display='flex';
+    document.getElementById('dashboard').style.display='none';
     return;
   }
 
-  const profile = await getUserProfile();
-  if (!profile) {
-    loadingView.style.display = 'none';
-    loginView.style.display = 'block';
-    document.getElementById('errorMsg').textContent = 'No profile found. Contact admin.';
-    document.getElementById('errorMsg').style.display = 'block';
-    document.body.style.display = 'flex';
-    return;
-  }
-
-  // Store profile for roster pages to use
-  sessionStorage.setItem('ivProfile', JSON.stringify(profile));
-
-  // Show dashboard
-  loadingView.style.display = 'none';
-  dashboardView.style.display = 'block';
-  document.body.style.display = 'block';
-  document.body.style.padding = '20px';
-
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
   renderDashboard(profile);
 }
 
-function renderDashboard(profile) {
-  const roleLabels = { admin: 'Administrator', team_leader: 'Team Leader', viewer: 'Viewer' };
-  const teamLabel = profile.team ? ` · Team ${profile.team}` : ' · All Teams';
-  document.getElementById('userInfo').textContent = `${profile.name || profile.email} · ${roleLabels[profile.role]}${teamLabel}`;
+function renderDashboard(profile){
+  const roleLabels={admin:'Administrator',team_leader:'Team Leader',viewer:'Viewer'};
+  document.getElementById('userName').textContent=profile.name||profile.email;
+  document.getElementById('userRole').textContent=(roleLabels[profile.role]||profile.role)+(profile.team?' · Team '+profile.team:'');
 
-  const canEditA = profile.role === 'admin' || (profile.role === 'team_leader' && profile.team === 'A');
-  const canEditB = profile.role === 'admin' || (profile.role === 'team_leader' && profile.team === 'B');
-  const canViewA = true; // everyone can view
-  const canViewB = true;
+  const canEditA=profile.role==='admin'||(profile.role==='team_leader'&&profile.team==='A');
+  const canEditB=profile.role==='admin'||(profile.role==='team_leader'&&profile.team==='B');
 
-  let cards = '';
-
-  // Team A card
-  const accessA = canEditA ? '<span class="access-full">✓ Full Access</span>' : '<span class="access-view">👁 View Only</span>';
-  cards += `<a href="iv_team_a_roster.html" class="card">
+  let cards='';
+  cards+=`<a href="iv_team_a_roster.html" class="card">
     <div class="card-icon">🅰️</div>
     <div class="card-title">Team A</div>
-    <div class="card-desc">Odd cycles: Jan, Mar, May, Jul, Sep, Nov</div>
-    <div class="card-access">${accessA}</div>
+    <div class="card-desc">Odd cycles · Jan, Mar, May, Jul, Sep, Nov</div>
+    <div class="card-access ${canEditA?'access-full':'access-view'}">${canEditA?'✓ Full Access':'👁 View Only'}</div>
   </a>`;
-
-  // Team B card
-  const accessB = canEditB ? '<span class="access-full">✓ Full Access</span>' : '<span class="access-view">👁 View Only</span>';
-  cards += `<a href="iv_team_b_roster.html" class="card">
+  cards+=`<a href="iv_team_b_roster.html" class="card">
     <div class="card-icon">🅱️</div>
     <div class="card-title">Team B</div>
-    <div class="card-desc">Even cycles: Feb, Apr, Jun, Aug, Oct, Dec</div>
-    <div class="card-access">${accessB}</div>
+    <div class="card-desc">Even cycles · Feb, Apr, Jun, Aug, Oct, Dec</div>
+    <div class="card-access ${canEditB?'access-full':'access-view'}">${canEditB?'✓ Full Access':'👁 View Only'}</div>
   </a>`;
 
-  // Admin panel card (admin only)
-  if(profile.role === 'admin'){
-    cards += `<a href="admin.html" class="card">
+  if(profile.role==='admin'){
+    cards+=`<a href="admin.html" class="card">
       <div class="card-icon">⚙️</div>
-      <div class="card-title">Admin Panel</div>
-      <div class="card-desc">User management, audit logs, settings</div>
-      <div class="card-access"><span class="access-full">Admin Only</span></div>
+      <div class="card-title">Admin</div>
+      <div class="card-desc">Users, audit logs, settings</div>
+      <div class="card-access access-full">Admin Only</div>
     </a>`;
   }
 
-  document.getElementById('teamCards').innerHTML = cards;
+  document.getElementById('teamCards').innerHTML=cards;
 }
 
-// On page load, check if already logged in
+// Check session on load
 checkAuthAndRoute();
+
+// Enter key support
+document.getElementById('emailInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('passwordInput').focus();});
 </script>
 </body>
 </html>
