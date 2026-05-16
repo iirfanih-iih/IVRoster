@@ -398,7 +398,7 @@ const DUTY_ASSIGNMENT_CONFIG = {
 async function init() {
   await checkAuth();
   setupEvents();
-  if (!loadState()) { resetCycle(true); }
+  if (!(await loadState())) { resetCycle(true); }
   recalculateCountsFromState();
   updateMemberSummary();
   renderEventList();
@@ -1385,7 +1385,7 @@ function resetCycle(silent){
 // ══════════════════════════════════════
 // LOCAL STORAGE PERSISTENCE
 // ══════════════════════════════════════
-function saveState() {
+async function saveState() {
   const stateToSave = {
     events,
     generatedRosters,
@@ -1393,23 +1393,73 @@ function saveState() {
     confirmedRosters: Array.from(confirmedRosters)
   };
   localStorage.setItem('rosterGeneratorStateB', JSON.stringify(stateToSave));
+
+  if(!_supabase || SUPABASE_URL.includes('YOUR_PROJECT')) return;
+  try{
+    setSyncStatus('saving');
+    for(const [eventId, roster] of Object.entries(generatedRosters)){
+      await dbSaveRoster(CURRENT_TEAM, eventId, roster, confirmedRosters.has(eventId));
+    }
+    for(const [eventId, overrides] of Object.entries(manualOverrides)){
+      if(Object.keys(overrides).length) await dbSaveOverride(CURRENT_TEAM, eventId, overrides);
+    }
+    setSyncStatus('ok');
+  }catch(e){
+    console.error('Supabase save failed:', e);
+    setSyncStatus('error');
+  }
 }
 
-function loadState() {
+async function loadState() {
+  if(_supabase && !SUPABASE_URL.includes('YOUR_PROJECT')){
+    try{
+      setSyncStatus('saving');
+      const rosters = await dbLoadRosters(CURRENT_TEAM);
+      if(rosters && rosters.length){
+        generatedRosters = {};
+        manualOverrides = {};
+        confirmedRosters = new Set();
+        rosters.forEach(r=>{
+          generatedRosters[r.event_id] = r.roster;
+          if(r.confirmed) confirmedRosters.add(r.event_id);
+        });
+        const overrides = await dbLoadOverrides(CURRENT_TEAM);
+        overrides.forEach(o=>{ manualOverrides[o.event_id] = o.overrides; });
+        localStorage.setItem('rosterGeneratorStateB', JSON.stringify({
+          events, generatedRosters, manualOverrides, confirmedRosters: Array.from(confirmedRosters)
+        }));
+        setSyncStatus('ok');
+        startRealtime(CURRENT_TEAM, handleRealtimeRosterChange);
+        return true;
+      }
+      setSyncStatus('ok');
+    }catch(e){
+      console.warn('Supabase load failed, falling back to localStorage:', e);
+      setSyncStatus('error');
+    }
+  }
   const savedStateJSON = localStorage.getItem('rosterGeneratorStateB');
   if (!savedStateJSON) return false;
   const savedState = JSON.parse(savedStateJSON);
-  // Restore rosters/overrides but always use code-defined events (setupEvents already ran)
-  // This ensures new event properties (congregation, notes, type changes) take effect
   generatedRosters = savedState.generatedRosters || {};
   manualOverrides = savedState.manualOverrides || {};
   confirmedRosters = new Set(savedState.confirmedRosters || []);
-  // Merge any user-added events from saved state that aren't in the code-defined list
   const codeIds = new Set(events.map(e => e.id));
   (savedState.events || []).forEach(savedEv => {
     if (!codeIds.has(savedEv.id)) events.push(savedEv);
   });
   return true;
+}
+
+function handleRealtimeRosterChange(payload){
+  const row = payload.new;
+  if(!row) return;
+  generatedRosters[row.event_id] = row.roster;
+  if(row.confirmed) confirmedRosters.add(row.event_id); else confirmedRosters.delete(row.event_id);
+  recalculateCountsFromState();
+  if(selectedEventIdx!==null) renderMainForEvent(selectedEventIdx);
+  renderEventList();
+  showToast('Roster updated by another user ✓');
 }
 
 function copyRosterTable(i){
