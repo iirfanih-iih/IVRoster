@@ -172,6 +172,8 @@ async function addUser(){
 
   if(!name||!email||!pass){toast('Fill all fields','err');return;}
   if(pass.length<6){toast('Password must be at least 6 characters','err');return;}
+  // Set force password change flag for new user
+  const forceChange=true;
   status.textContent='Creating user…';status.style.color='#0068b3';
 
   try{
@@ -186,6 +188,11 @@ async function addUser(){
     });
     const result = await res.json();
     if(!result.success) throw new Error(result.error);
+
+    // Set force password change on first login
+    if(forceChange && result.user_id){
+      await _supabase.from('app_settings').upsert({key:'force_pw_change_'+result.user_id,value:'true'},{onConflict:'key'});
+    }
 
     document.getElementById('newName').value='';
     document.getElementById('newEmail').value='';

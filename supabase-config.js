@@ -203,3 +203,87 @@ async function auditLog(action, category, detail) {
   }
   console.log('AUDIT:', entry.action, entry.detail, entry.ip);
 }
+
+
+// ══════════════════════════════════════
+// EMAIL NOTIFICATIONS (critical actions)
+// ══════════════════════════════════════
+const CRITICAL_ACTIONS = ['Login', 'User created', 'Password reset', 'Roster confirmed', 'Event cleared', 'Leadership contacts updated'];
+
+async function sendNotification(subject, body, category) {
+  if (!_supabase || SUPABASE_URL.includes('YOUR_PROJECT')) return;
+  try {
+    const session = await getSession();
+    await fetch(SUPABASE_URL + '/functions/v1/send-notification', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (session ? session.access_token : '')
+      },
+      body: JSON.stringify({ subject, body, category })
+    });
+  } catch(e) { console.warn('Notification failed:', e); }
+}
+
+// Patch auditLog to send email on critical actions
+const _originalAuditLog = auditLog;
+auditLog = async function(action, category, detail) {
+  await _originalAuditLog(action, category, detail);
+  if (CRITICAL_ACTIONS.some(a => action.includes(a))) {
+    const user = window._currentUserName || window._currentUserEmail || 'Unknown';
+    sendNotification(
+      action,
+      `<strong>User:</strong> ${user}<br><strong>Action:</strong> ${action}<br><strong>Details:</strong> ${detail || 'N/A'}<br><strong>Time:</strong> ${new Date().toLocaleString('en-NZ')}<br><strong>IP:</strong> ${_clientIP || 'Unknown'}`,
+      category
+    );
+  }
+};
+
+// ══════════════════════════════════════
+// RATE LIMITING
+// ══════════════════════════════════════
+const _rateLimits = {};
+function isRateLimited(action, maxPerMinute) {
+  const now = Date.now();
+  if (!_rateLimits[action]) _rateLimits[action] = [];
+  _rateLimits[action] = _rateLimits[action].filter(t => now - t < 60000);
+  if (_rateLimits[action].length >= maxPerMinute) return true;
+  _rateLimits[action].push(now);
+  return false;
+}
+
+// ══════════════════════════════════════
+// PASSWORD COMPLEXITY
+// ══════════════════════════════════════
+function validatePassword(pw) {
+  const errors = [];
+  if (pw.length < 8) errors.push('At least 8 characters');
+  if (!/[A-Z]/.test(pw)) errors.push('At least 1 uppercase letter');
+  if (!/[0-9]/.test(pw)) errors.push('At least 1 number');
+  if (!/[!@#$%^&*()_+\-=\[\]{};:,.<>?]/.test(pw)) errors.push('At least 1 special character');
+  return errors;
+}
+
+// ══════════════════════════════════════
+// FORCE PASSWORD CHANGE ON NEXT LOGIN
+// ══════════════════════════════════════
+async function checkForcePasswordChange() {
+  if (!_supabase || SUPABASE_URL.includes('YOUR_PROJECT')) return;
+  try {
+    const session = await getSession();
+    if (!session) return;
+    const { data } = await _supabase.from('app_settings').select('value').eq('key', 'force_pw_change_' + session.user.id).maybeSingle();
+    if (data && data.value === 'true') {
+      const newPw = prompt('You are required to change your password.\n\nRequirements:\n- At least 8 characters\n- 1 uppercase letter\n- 1 number\n- 1 special character (!@#$%^&*)\n\nEnter new password:');
+      if (!newPw) { await signOut(); return; }
+      const errors = validatePassword(newPw);
+      if (errors.length) { alert('Password does not meet requirements:\n- ' + errors.join('\n- ')); await signOut(); return; }
+      // Update password
+      const { error } = await _supabase.auth.updateUser({ password: newPw });
+      if (error) { alert('Failed to update password: ' + error.message); await signOut(); return; }
+      // Remove force flag
+      await _supabase.from('app_settings').delete().eq('key', 'force_pw_change_' + session.user.id);
+      alert('Password updated successfully!');
+    }
+  } catch(e) { console.warn('Force PW check failed:', e); }
+}

@@ -242,8 +242,10 @@ async function handleLogin(e){
   const btn=document.getElementById('loginBtn');
   const err=document.getElementById('errorMsg');
   err.textContent='';btn.disabled=true;btn.textContent='Signing in…';
+  if(isRateLimited('login',5)){err.textContent='Too many attempts. Please wait 1 minute.';btn.disabled=false;btn.textContent='Sign In';return;}
   try{
     await signIn(document.getElementById('emailInput').value.trim(),document.getElementById('passwordInput').value);
+    await checkForcePasswordChange();
     await checkAuthAndRoute();
   }catch(ex){err.textContent=ex.message||'Invalid credentials';btn.disabled=false;btn.textContent='Sign In';}
 }
