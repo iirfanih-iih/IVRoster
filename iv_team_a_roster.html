@@ -9,9 +9,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="theme.js"></script>
 <script src="supabase-config.js"></script>
 <style>
-:root{--primary:#4FC3F7;--primary-light:#81D4FA;--bg-main:#020B18;--bg-alt:#071628;--text-main:#E8F4FD;--text-light:#7AAECB;--border-color:rgba(79,195,247,0.18);--shadow:0 2px 8px rgba(0,0,0,0.3);--cream2:#0D2040;--dark:#E8F4FD;--mid:#7AAECB;--border:rgba(79,195,247,0.18);--gold:#F59E0B;--deep:#020B18;--success:#34D399;--radius:9px;}
+:root,html.theme-dark{--primary:#4FC3F7;--primary-light:#81D4FA;--bg-main:#020B18;--bg-alt:#071628;--text-main:#E8F4FD;--text-light:#7AAECB;--border-color:rgba(79,195,247,0.18);--shadow:0 2px 8px rgba(0,0,0,0.3);--cream2:#0D2040;--dark:#E8F4FD;--mid:#7AAECB;--border:rgba(79,195,247,0.18);--gold:#F59E0B;--deep:#020B18;--success:#34D399;--radius:9px;}
+html.theme-light{--primary:#0068b3;--primary-light:#4da0d8;--bg-main:#f4f6fb;--bg-alt:#fff;--text-main:#1a1a2e;--text-light:#555;--border-color:#dde6f5;--shadow:0 2px 8px rgba(0,0,0,0.08);--cream2:#f0f2f8;--dark:#1a1a2e;--mid:#666;--border:#dde6f5;--gold:#d4a017;--deep:#f4f6fb;--success:#2d7a3a;--radius:9px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Lexend',sans-serif;background:var(--bg-main);color:var(--text-main);min-height:100vh;font-size:15px;}
 header{background:var(--bg-alt);color:var(--primary);padding:10px 20px;display:flex;align-items:center;gap:15px;border-bottom:1px solid var(--border-color);box-shadow:0 2px 12px rgba(0,0,0,.4);}
@@ -142,9 +144,10 @@ thead{position:sticky;top:0;z-index:1;}
 </head>
 <body>
 <header>
-  <a href="index.html" style="text-decoration:none;background:var(--primary);color:#fff;border-radius:6px;padding:6px 12px;font-size:.72rem;font-weight:600;font-family:'DM Sans',sans-serif;white-space:nowrap;">← Home</a>
+  <a href="index.html" style="text-decoration:none;background:var(--primary);color:var(--bg-main);border-radius:6px;padding:6px 12px;font-size:.72rem;font-weight:600;font-family:'DM Sans',sans-serif;white-space:nowrap;">← Home</a>
   <img src="iv-logo.png" alt="IV Logo">
   <div><h1>IV Team A - Roster Generator</h1><p>Automated duty assignment · Alternate month cycle</p></div>
+  <button id="themeToggle" onclick="cycleTheme()" style="margin-left:auto;background:none;border:1px solid var(--border-color);border-radius:8px;padding:6px 10px;font-size:1rem;cursor:pointer;" title="Toggle theme">🌙</button>
 </header>
 <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open')">☰</button>
 <div class="app">

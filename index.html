@@ -11,14 +11,23 @@
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&family=Barlow:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="theme.js"></script>
 <script src="supabase-config.js"></script>
 <style>
-:root{
+:root,html.theme-dark{
   --dp:#020B18;--ds:#071628;--ds2:#0D2040;
   --dt:#E8F4FD;--dm:#7AAECB;--db:rgba(79,195,247,0.18);
   --blue:#1565C0;--blue2:#1976D2;--blue-lt:#4FC3F7;
   --navy:#0C2461;--green:#34D399;--green-bg:rgba(52,211,153,0.12);--green-bd:rgba(52,211,153,0.3);
   --gold:#F59E0B;--gold-bg:rgba(245,158,11,0.12);--gold-bd:rgba(245,158,11,0.3);
+  --r:9px;
+}
+html.theme-light{
+  --dp:#f4f6fb;--ds:#fff;--ds2:#e8ecf4;
+  --dt:#1a1a2e;--dm:#555;--db:#dde6f5;
+  --blue:#1565C0;--blue2:#1976D2;--blue-lt:#0068b3;
+  --navy:#0C2461;--green:#2d7a3a;--green-bg:rgba(45,122,58,0.1);--green-bd:rgba(45,122,58,0.3);
+  --gold:#b38600;--gold-bg:rgba(179,134,0,0.1);--gold-bd:rgba(179,134,0,0.3);
   --r:9px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -168,7 +177,10 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
       </div>
       <div class="sb-footer">
         <div class="sb-user"><strong id="userName"></strong><span id="userRole"></span></div>
-        <button class="btn-logout" onclick="signOut()">Sign Out</button>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <button class="btn-logout" onclick="signOut()" style="flex:1;">Sign Out</button>
+          <button id="themeToggle" onclick="cycleTheme()" style="background:none;border:1px solid var(--db);border-radius:6px;padding:5px 10px;font-size:1rem;cursor:pointer;" title="Toggle theme">🌙</button>
+        </div>
       </div>
     </div>
     <div class="main-content">
