@@ -148,6 +148,10 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
       <button type="submit" class="lbtn" id="loginBtn">Sign In</button>
     </form>
     <div class="lerr" id="errorMsg"></div>
+    <div style="margin-top:20px;padding:12px 16px;border:1px solid rgba(248,120,120,.25);border-radius:8px;background:rgba(248,120,120,.05);text-align:center;">
+      <div style="font-size:9px;font-weight:700;color:#f88;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">⚠️ Authorised Access Only</div>
+      <div style="font-size:10px;color:var(--dm);line-height:1.5;">This system is for authorised Auckland Ismaili Volunteers only. Unauthorised access is strictly prohibited. If you are not an authorised user, exit immediately.</div>
+    </div>
   </div>
 </div>
 
@@ -208,7 +212,7 @@ const CYCLES=[
   {team:'A',label:'Nov 10 – Dec 8',events:[{date:'2026-11-10',name:'Chandraat'},{date:'2026-11-13',name:'Friday Majlis'},{date:'2026-11-14',name:'Baithulkhayal'},{date:'2026-11-18',name:'Paanch Baar Saal'},{date:'2026-11-20',name:'Friday Majlis'},{date:'2026-11-21',name:'Student Mijalis'},{date:'2026-11-27',name:'Friday Majlis'},{date:'2026-12-04',name:'Friday Majlis'}]},
   {team:'B',label:'Dec 9 – Jan 2027',events:[{date:'2026-12-09',name:'Chandraat'},{date:'2026-12-11',name:'Friday Majlis'},{date:'2026-12-12',name:'Baithulkhayal'},{date:'2026-12-17',name:'Paanch Baar Saal'},{date:'2026-12-18',name:'Friday Majlis'},{date:'2026-12-19',name:'Student Mijalis'},{date:'2026-12-21',name:'Yawm-i Ali'},{date:'2026-12-25',name:'Friday Majlis'}]},
 ];
-const CONTACTS=[
+let CONTACTS=[
   {role:'Council Member',name:'Salman Momin',phone:'+64 22 070 6786',email:'ssjinnah@gmail.com',group:'council'},
   {role:'Asst. CMC',name:'Sameer Hirani',phone:'+64 22 397 9442',email:'sameerhirani99@gmail.com',group:'council'},
   {role:'IVC Director',name:'Irfan Jalia',phone:'+64 22 571 3757',email:'jaliairfan@gmail.com',group:'council'},
@@ -254,6 +258,8 @@ async function checkAuthAndRoute(){
   document.getElementById('userName').textContent=profile.name||profile.email;
   document.getElementById('userRole').textContent=(roleLabels[profile.role]||profile.role)+(profile.team?' · Team '+profile.team:'');
   if(profile.role==='admin')document.getElementById('adminNav').style.display='block';
+  // Load saved leadership contacts
+  await loadLeadershipContacts();
   renderHome();
   renderCalendar();
   renderLeadership();
@@ -268,22 +274,77 @@ function navTo(page){
   event.target.closest('.nav-item').classList.add('active');
 }
 
+async function loadLeadershipContacts(){
+  // Try Supabase first
+  if(_supabase && !SUPABASE_URL.includes('YOUR_PROJECT')){
+    try{
+      const{data}=await _supabase.from('app_settings').select('value').eq('key','leadership_contacts').maybeSingle();
+      if(data&&data.value){
+        const saved=typeof data.value==='string'?JSON.parse(data.value):data.value;
+        if(Array.isArray(saved)&&saved.length) CONTACTS.splice(0,CONTACTS.length,...saved);
+        return;
+      }
+    }catch(e){}
+  }
+  // Fallback localStorage
+  const local=localStorage.getItem('iv_leadership');
+  if(local){try{const saved=JSON.parse(local);if(Array.isArray(saved))CONTACTS.splice(0,CONTACTS.length,...saved);}catch(e){}}
+}
+
 function renderHome(){
   const p=currentProfile;
   const canEditA=p.role==='admin'||(p.role==='team_leader'&&p.team==='A');
   const canEditB=p.role==='admin'||(p.role==='team_leader'&&p.team==='B');
+  const totalA=27+32,totalB=30+32;
   document.getElementById('page-home').innerHTML=`
     <div class="page-title">Dashboard</div>
-    <div class="page-sub">Select a team to manage rosters</div>
-    <div class="cards">
-      <a href="iv_team_a_roster.html" class="card"><div class="card-icon">🅰️</div><div class="card-title">Team A</div><div class="card-desc">Odd cycles · Jan, Mar, May, Jul, Sep, Nov</div><div class="card-access ${canEditA?'access-full':'access-view'}">${canEditA?'✓ Full Access':'👁 View Only'}</div></a>
-      <a href="iv_team_b_roster.html" class="card"><div class="card-icon">🅱️</div><div class="card-title">Team B</div><div class="card-desc">Even cycles · Feb, Apr, Jun, Aug, Oct, Dec</div><div class="card-access ${canEditB?'access-full':'access-view'}">${canEditB?'✓ Full Access':'👁 View Only'}</div></a>
+    <div class="page-sub">Auckland Ismaili Volunteers — Roster Management System</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+      <a href="iv_team_a_roster.html" class="card" style="padding:32px 24px;">
+        <div class="card-icon" style="font-size:3rem;">🅰️</div>
+        <div class="card-title" style="font-size:18px;margin-bottom:8px;">Team A</div>
+        <div class="card-desc">Odd cycles · Jan, Mar, May, Jul, Sep, Nov</div>
+        <div style="margin-top:12px;font-size:11px;color:var(--dm);">${totalA} members · 11 Nandi experienced</div>
+        <div class="card-access ${canEditA?'access-full':'access-view'}">${canEditA?'✓ Full Access':'👁 View Only'}</div>
+      </a>
+      <a href="iv_team_b_roster.html" class="card" style="padding:32px 24px;">
+        <div class="card-icon" style="font-size:3rem;">🅱️</div>
+        <div class="card-title" style="font-size:18px;margin-bottom:8px;">Team B</div>
+        <div class="card-desc">Even cycles · Feb, Apr, Jun, Aug, Oct, Dec</div>
+        <div style="margin-top:12px;font-size:11px;color:var(--dm);">${totalB} members · 12 Nandi experienced</div>
+        <div class="card-access ${canEditB?'access-full':'access-view'}">${canEditB?'✓ Full Access':'👁 View Only'}</div>
+      </a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;">
+      <div style="background:var(--ds);border:1px solid var(--db);border-radius:10px;padding:16px;text-align:center;">
+        <div style="font-size:24px;font-weight:800;color:var(--blue-lt);font-family:'Barlow',sans-serif;">12</div>
+        <div style="font-size:10px;color:var(--dm);margin-top:4px;">Duty Cycles / Year</div>
+      </div>
+      <div style="background:var(--ds);border:1px solid var(--db);border-radius:10px;padding:16px;text-align:center;">
+        <div style="font-size:24px;font-weight:800;color:var(--green);font-family:'Barlow',sans-serif;">${totalA+totalB}</div>
+        <div style="font-size:10px;color:var(--dm);margin-top:4px;">Total Volunteers</div>
+      </div>
+      <div style="background:var(--ds);border:1px solid var(--db);border-radius:10px;padding:16px;text-align:center;">
+        <div style="font-size:24px;font-weight:800;color:var(--gold);font-family:'Barlow',sans-serif;">17</div>
+        <div style="font-size:10px;color:var(--dm);margin-top:4px;">Duty Types</div>
+      </div>
+    </div>
+    <div style="background:var(--ds);border:1px solid var(--db);border-radius:10px;padding:16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--dm);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Quick Links</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a onclick="navTo('calendar')" style="cursor:pointer;background:var(--ds2);border:1px solid var(--db);border-radius:8px;padding:8px 14px;font-size:11px;color:var(--blue-lt);text-decoration:none;">📅 Year Calendar</a>
+        <a onclick="navTo('guide')" style="cursor:pointer;background:var(--ds2);border:1px solid var(--db);border-radius:8px;padding:8px 14px;font-size:11px;color:var(--blue-lt);text-decoration:none;">📑 Duty Guide</a>
+        <a onclick="navTo('leadership')" style="cursor:pointer;background:var(--ds2);border:1px solid var(--db);border-radius:8px;padding:8px 14px;font-size:11px;color:var(--blue-lt);text-decoration:none;">👥 Contacts</a>
+        ${p.role==='admin'?'<a href="admin.html" style="background:var(--ds2);border:1px solid var(--db);border-radius:8px;padding:8px 14px;font-size:11px;color:var(--gold);text-decoration:none;">⚙️ Admin Panel</a>':''}
+      </div>
     </div>`;
 }
 
 function renderCalendar(){
   const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  let h='<div class="page-title">📅 Year Calendar 2026</div><div class="page-sub">All duty cycles for Team A and Team B · <a href="2026-Calendar-Auckland.pdf" target="_blank" style="color:var(--blue-lt);">Download PDF ↓</a></div>';
+  let h='<div class="page-title">📅 Year Calendar 2026</div><div class="page-sub">All duty cycles for Team A and Team B</div>';
+  h+='<div style="display:flex;gap:10px;margin-bottom:16px;"><a href="2026-Calendar-Auckland.pdf" target="_blank" style="background:var(--ds2);border:1px solid var(--db);border-radius:8px;padding:8px 16px;font-size:11px;color:var(--blue-lt);text-decoration:none;font-weight:600;">👁 View PDF Calendar</a><a href="2026-Calendar-Auckland.pdf" download style="background:var(--ds2);border:1px solid var(--db);border-radius:8px;padding:8px 16px;font-size:11px;color:var(--green);text-decoration:none;font-weight:600;">⬇ Download PDF</a></div>';
+  h+='<div style="background:var(--ds);border:1px solid var(--db);border-radius:10px;overflow:hidden;margin-bottom:20px;"><iframe src="2026-Calendar-Auckland.pdf" style="width:100%;height:400px;border:none;"></iframe></div>';
   CYCLES.forEach((c,i)=>{
     const badge=c.team==='A'?'badge-a':'badge-b';
     h+=`<div class="cycle-group"><div class="cycle-header" onclick="this.nextElementSibling.classList.toggle('open')">
@@ -306,18 +367,47 @@ function renderLeadership(){
     {key:'safety',label:'Safety'},
     {key:'emergency',label:'Emergency Contacts'},
   ];
+  const isAdmin=currentProfile&&currentProfile.role==='admin';
   let h='<div class="page-title">👥 Leadership & Contacts</div><div class="page-sub">Auckland Jamatkhana — 2-4 Ascension Place, Rosedale</div>';
-  groups.forEach(g=>{
+  if(isAdmin) h+='<div style="margin-bottom:12px;"><button onclick="toggleLeadershipEdit()" style="background:var(--ds2);border:1px solid var(--db);border-radius:8px;padding:8px 14px;font-size:11px;color:var(--blue-lt);cursor:pointer;font-family:Lexend,sans-serif;font-weight:600;" id="leaderEditBtn">✏️ Edit Contacts</button></div>';
+  groups.forEach((g,gi)=>{
     const items=CONTACTS.filter(c=>c.group===g.key);
     if(!items.length)return;
     h+=`<div class="doc-section" style="margin-bottom:14px;"><h3>${g.label}</h3>
-      <table><thead><tr><th style="width:160px;">Role</th><th>Name</th><th>Phone</th><th>Email</th>${g.key==='emergency'?'<th>Address</th>':''}</tr></thead><tbody>`;
-    items.forEach(c=>{
-      h+=`<tr><td style="font-weight:600;color:var(--dt);">${c.role}</td><td>${c.name||'—'}</td><td style="font-family:monospace;color:var(--blue-lt);">${c.phone||'—'}</td><td style="color:var(--green);">${c.email||'—'}</td>${g.key==='emergency'&&c.addr?'<td style="color:var(--dm);">'+c.addr+'</td>':g.key==='emergency'?'<td>—</td>':''}</tr>`;
+      <table><thead><tr><th style="width:140px;">Role</th><th>Name</th><th>Phone</th><th>Email</th>${g.key==='emergency'?'<th>Address</th>':''}</tr></thead><tbody>`;
+    items.forEach((c,ci)=>{
+      const idx=CONTACTS.indexOf(c);
+      if(isAdmin){
+        h+=`<tr class="leader-edit-row" style="display:none;"><td><input value="${c.role}" data-idx="${idx}" data-f="role" style="width:100%;background:var(--ds2);border:1px solid var(--db);border-radius:4px;padding:4px 6px;color:var(--dt);font-size:11px;"></td><td><input value="${c.name||''}" data-idx="${idx}" data-f="name" style="width:100%;background:var(--ds2);border:1px solid var(--db);border-radius:4px;padding:4px 6px;color:var(--dt);font-size:11px;"></td><td><input value="${c.phone||''}" data-idx="${idx}" data-f="phone" style="width:100%;background:var(--ds2);border:1px solid var(--db);border-radius:4px;padding:4px 6px;color:var(--dt);font-size:11px;"></td><td><input value="${c.email||''}" data-idx="${idx}" data-f="email" style="width:100%;background:var(--ds2);border:1px solid var(--db);border-radius:4px;padding:4px 6px;color:var(--dt);font-size:11px;"></td>${g.key==='emergency'?'<td><input value="'+(c.addr||'')+'" data-idx="'+idx+'" data-f="addr" style="width:100%;background:var(--ds2);border:1px solid var(--db);border-radius:4px;padding:4px 6px;color:var(--dt);font-size:11px;"></td>':''}</tr>`;
+        h+=`<tr class="leader-view-row"><td style="font-weight:600;color:var(--dt);">${c.role}</td><td>${c.name||'—'}</td><td style="font-family:monospace;color:var(--blue-lt);">${c.phone||'—'}</td><td style="color:var(--green);">${c.email||'—'}</td>${g.key==='emergency'&&c.addr?'<td style="color:var(--dm);">'+c.addr+'</td>':g.key==='emergency'?'<td>—</td>':''}</tr>`;
+      } else {
+        h+=`<tr><td style="font-weight:600;color:var(--dt);">${c.role}</td><td>${c.name||'—'}</td><td style="font-family:monospace;color:var(--blue-lt);">${c.phone||'—'}</td><td style="color:var(--green);">${c.email||'—'}</td>${g.key==='emergency'&&c.addr?'<td style="color:var(--dm);">'+c.addr+'</td>':g.key==='emergency'?'<td>—</td>':''}</tr>`;
+      }
     });
     h+=`</tbody></table></div>`;
   });
+  if(isAdmin) h+='<div class="leader-edit-row" style="display:none;margin-top:12px;"><button onclick="saveLeadership()" style="background:linear-gradient(135deg,#166534,#15803D);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lexend,sans-serif;">💾 Save Changes</button></div>';
   document.getElementById('page-leadership').innerHTML=h;
+}
+function toggleLeadershipEdit(){
+  const editing=document.querySelector('.leader-edit-row')?.style.display!=='none';
+  document.querySelectorAll('.leader-edit-row').forEach(r=>r.style.display=editing?'none':'');
+  document.querySelectorAll('.leader-view-row').forEach(r=>r.style.display=editing?'':'none');
+  document.getElementById('leaderEditBtn').textContent=editing?'✏️ Edit Contacts':'✖ Cancel Edit';
+}
+async function saveLeadership(){
+  document.querySelectorAll('.leader-edit-row input[data-idx]').forEach(inp=>{
+    const idx=parseInt(inp.dataset.idx);
+    const field=inp.dataset.f;
+    CONTACTS[idx][field]=inp.value.trim();
+  });
+  // Save to Supabase app_settings
+  if(_supabase && !SUPABASE_URL.includes('YOUR_PROJECT')){
+    await _supabase.from('app_settings').upsert({key:'leadership_contacts',value:JSON.stringify(CONTACTS)},{onConflict:'key'});
+  }
+  localStorage.setItem('iv_leadership',JSON.stringify(CONTACTS));
+  toggleLeadershipEdit();
+  renderLeadership();
 }
 
 function renderGuide(){
