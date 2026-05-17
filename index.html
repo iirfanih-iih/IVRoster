@@ -200,8 +200,8 @@ const CONTACTS=[
   {role:'Council Member',name:'Salman Momin',phone:'+64 22 070 6786',email:'ssjinnah@gmail.com',group:'council'},
   {role:'Asst. CMC',name:'Sameer Hirani',phone:'+64 22 397 9442',email:'sameerhirani99@gmail.com',group:'council'},
   {role:'IVC Director',name:'Irfan Jalia',phone:'+64 22 571 3757',email:'jaliairfan@gmail.com',group:'council'},
-  {role:'Deputy Director',name:'Shahzad Saleem',phone:'+64 20 4057 2575',email:'',group:'council'},
-  {role:'Facilitator',name:'Muskaan Somjee',phone:'+64 20 4065 7515',email:'muskaansomjee@gmail.com',group:'council'},
+  {role:'IV Deputy Director',name:'Shahzad Saleem',phone:'+64 20 4057 2575',email:'',group:'council'},
+  {role:'IV Facilitator',name:'Muskaan Somjee',phone:'+64 20 4065 7515',email:'muskaansomjee@gmail.com',group:'council'},
   {role:'Team Lead',name:'Irfan Ismail',phone:'+64 27 258 6371',email:'iirfanih@gmail.com',group:'teamA'},
   {role:'Team Lead',name:'Karishma Dharani',phone:'+64 29 777 8786',email:'tabbudharani@gmail.com',group:'teamA'},
   {role:'Asst. Team Lead',name:'Aaliyah Vishram',phone:'',email:'aaliyahvishram@gmail.com',group:'teamA'},
@@ -209,6 +209,7 @@ const CONTACTS=[
   {role:'Team Lead',name:'Sadiq Daredia',phone:'+64 22 356 8786',email:'',group:'teamB'},
   {role:'Asst. Team Lead',name:'Ahad Lokhandwala',phone:'',email:'ahadloks@gmail.com',group:'teamB'},
   {role:'Safety Lead',name:'Riyaz Sutar',phone:'+64 20 400 00134',email:'',group:'safety'},
+  {role:'PHMU Lead',name:'Aziz Barolia',phone:'',email:'',group:'council'},
   {role:'Medical Centre',name:'Northcare Accident & Medical',phone:'09-479 7770',addr:'5 Home Place, Rosedale',group:'emergency'},
   {role:'Hospital',name:'North Shore Hospital',phone:'09-486 8900',addr:'124 Shakespeare Rd, Takapuna',group:'emergency'},
   {role:'Police',name:'North Shore Police',phone:'09-477 5000',addr:'52 Parkway Drive, Rosedale',group:'emergency'},
@@ -298,9 +299,9 @@ function renderLeadership(){
     const items=CONTACTS.filter(c=>c.group===g.key);
     if(!items.length)return;
     h+=`<div class="doc-section" style="margin-bottom:14px;"><h3>${g.label}</h3>
-      <table><thead><tr><th style="width:160px;">Role</th><th>Name</th><th>Phone</th><th>Email</th><th>Address</th></tr></thead><tbody>`;
+      <table><thead><tr><th style="width:160px;">Role</th><th>Name</th><th>Phone</th><th>Email</th>${g.key==='emergency'?'<th>Address</th>':''}</tr></thead><tbody>`;
     items.forEach(c=>{
-      h+=`<tr><td style="font-weight:600;color:var(--dt);">${c.role}</td><td>${c.name||'—'}</td><td style="font-family:monospace;color:var(--blue-lt);">${c.phone||'—'}</td><td style="color:var(--green);">${c.email||''}</td>${c.addr?'<td style="color:var(--dm);">'+c.addr+'</td>':''}</tr>`;
+      h+=`<tr><td style="font-weight:600;color:var(--dt);">${c.role}</td><td>${c.name||'—'}</td><td style="font-family:monospace;color:var(--blue-lt);">${c.phone||'—'}</td><td style="color:var(--green);">${c.email||'—'}</td>${g.key==='emergency'&&c.addr?'<td style="color:var(--dm);">'+c.addr+'</td>':g.key==='emergency'?'<td>—</td>':''}</tr>`;
     });
     h+=`</tbody></table></div>`;
   });

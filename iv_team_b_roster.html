@@ -607,29 +607,22 @@ function renderEventList(){
   // Determine current cycle period
   const selEv=selectedEventIdx!==null?events[selectedEventIdx]:null;
   const currentPeriod=selEv?getEventPeriodKey(selEv):null;
-  // Group events by cycle (each cycle starts with a chandraat event)
-  const locked=events.filter(e=>e.locked);
-  const upcoming=events.filter(e=>!e.locked);
-  const lockedCycles=[];
-  locked.forEach(ev=>{
-    if(ev.type==='chandraat'||lockedCycles.length===0) lockedCycles.push([]);
-    lockedCycles[lockedCycles.length-1].push(ev);
+  const allSorted=[...events].sort((a,b)=>new Date(a.dateRaw)-new Date(b.dateRaw));
+  const allCycles=[];
+  allSorted.forEach(ev=>{
+    if(ev.type==='chandraat'||allCycles.length===0) allCycles.push([]);
+    allCycles[allCycles.length-1].push(ev);
   });
-  lockedCycles.forEach(cycle=>{
+  const today=startOfDay(new Date());
+  allCycles.forEach(cycle=>{
     const first=cycle[0],last=cycle[cycle.length-1];
-    const label=`Historic Cycle (${new Date(first.dateRaw).toLocaleDateString('en-US',{month:'short'})}–${new Date(last.dateRaw).toLocaleDateString('en-US',{month:'short',year:'numeric'})})`;
-    const isCurrent=currentPeriod&&cycle.some(e=>getEventPeriodKey(e)===currentPeriod);
-    renderGroup(label,cycle,isCurrent);
-  });
-  const upcomingCycles=[];
-  upcoming.forEach(ev=>{
-    if(ev.type==='chandraat'||upcomingCycles.length===0) upcomingCycles.push([]);
-    upcomingCycles[upcomingCycles.length-1].push(ev);
-  });
-  upcomingCycles.forEach((cycle,idx)=>{
-    const first=cycle[0],last=cycle[cycle.length-1];
-    const label=`Upcoming Cycle (${new Date(first.dateRaw).toLocaleDateString('en-US',{month:'short'})}–${new Date(last.dateRaw).toLocaleDateString('en-US',{month:'short',year:'numeric'})})`;
-    const isCurrent=currentPeriod?cycle.some(e=>getEventPeriodKey(e)===currentPeriod):idx===0;
+    const cycleStart=startOfDay(new Date(first.dateRaw));
+    const cycleEnd=startOfDay(new Date(last.dateRaw));
+    let prefix='Historic';
+    if(cycleStart<=today&&cycleEnd>=today) prefix='Current';
+    else if(cycleStart>today) prefix='Upcoming';
+    const label=`${prefix} Cycle (${new Date(first.dateRaw).toLocaleDateString('en-US',{month:'short'})}–${new Date(last.dateRaw).toLocaleDateString('en-US',{month:'short',year:'numeric'})})`;
+    const isCurrent=currentPeriod?cycle.some(e=>getEventPeriodKey(e)===currentPeriod):prefix==='Current';
     renderGroup(label,cycle,isCurrent);
   });
 }
@@ -798,7 +791,7 @@ function showManualEntry(i){
   const allMembers=[...MEMBERS.male.filter(m=>!m.inactive).map(m=>m.name),...MEMBERS.female.filter(m=>!m.inactive).map(m=>m.name)];
   const datalist=`<datalist id="memberList">${allMembers.map(n=>'<option value="'+n+'">').join('')}</datalist>`;
   let h=datalist+`<div class="roster-card"><div class="roster-card-header"><h2>\u270d\ufe0f Manual Entry \u2014 ${ev.name}</h2><span>${ev.date}</span></div>
-    <table><thead><tr><th>Duty</th><th>Male</th><th>Female</th></tr></thead><tbody>`;
+    <div style="padding:10px 18px;font-size:.75rem;color:var(--text-light);background:var(--bg-main);border-bottom:1px solid var(--border-color);">Separate multiple names with <strong>/</strong> (e.g. Amin Kotadia / Taraz Rupani)</div><table><thead><tr><th>Duty</th><th>Male</th><th>Female</th></tr></thead><tbody>`;
   dutyList.forEach((d,idx)=>{
     h+=`<tr><td><span class="duty-name">${d}</span></td>
       <td><input type="text" id="me_m_${idx}" list="memberList" placeholder="Name / Name / ..." style="width:100%;padding:6px 8px;border:1px solid var(--border-color);border-radius:6px;font-size:.78rem;font-family:'DM Sans',sans-serif;outline:none;"></td>
