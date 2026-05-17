@@ -347,28 +347,12 @@ async function searchMember(){
 // SETTINGS
 // ══════════════════════════════════════
 function renderSettings(){
-  let h=`<div class="card"><div class="card-title">Active Team Override</div>
-    <p style="font-size:.78rem;color:var(--text2);margin-bottom:12px;">Manually set which team is currently active. This is normally determined by the Chandraat cycle.</p>
-    <div class="form-row">
-      <button class="btn btn-primary" onclick="setActiveTeam('A')">Set Team A Active</button>
-      <button class="btn btn-primary" onclick="setActiveTeam('B')">Set Team B Active</button>
-    </div>
-  </div>
-  <div class="card"><div class="card-title">Database</div>
+  let h=`<div class="card"><div class="card-title">Database</div>
     <p style="font-size:.78rem;color:var(--text2);margin-bottom:12px;">Supabase project: <code>${SUPABASE_URL}</code></p>
     <button class="btn btn-outline" onclick="testConnection()">Test Connection</button>
     <span id="connStatus" style="margin-left:12px;font-size:.78rem;"></span>
   </div>`;
   document.getElementById('settingsPanel').innerHTML=h;
-}
-
-async function setActiveTeam(team){
-  if(!_supabase){toast('Not connected','err');return;}
-  try{
-    await _supabase.from('app_settings').upsert({key:'active_team',value:JSON.stringify({team})},{onConflict:'key'});
-    await logAudit('Set active team: '+team,'settings','');
-    toast('✓ Active team set to '+team);
-  }catch(e){toast('Failed: '+e.message,'err');}
 }
 
 async function testConnection(){

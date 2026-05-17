@@ -600,7 +600,7 @@ function renderMainForEvent(i){
           ${confirmedRosters.has(ev.id)?'↩ Unconfirm':ev.locked?'🔒 Historical':generatedRosters[ev.id]?'↺ Regenerate':'⚡ Generate'}
         </button>
         ${generatedRosters[ev.id]&&!confirmedRosters.has(ev.id)?`<button class="btn-confirm" onclick="confirmRoster(${i})" style="background:var(--gold);color:var(--deep);border:none;border-radius:8px;padding:10px 18px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;">✓ Confirm</button>`:''}
-        ${generatedRosters[ev.id]?`<button class="btn-generate" onclick="exportRosterImage(${i})" style="background:var(--bg-alt);color:var(--primary);border:1px solid var(--primary);">📷 Export</button><button class="btn-generate" onclick="copyRosterTable(${i})" style="background:var(--bg-alt);color:var(--primary);border:1px solid var(--primary);">📋 Copy</button>`:''}
+        ${generatedRosters[ev.id]?`<button class="btn-generate" onclick="exportRosterImage(${i})" style="background:var(--bg-alt);color:var(--primary);border:1px solid var(--primary);">📷 Export</button><button class="btn-generate" onclick="copyRosterTable(${i})" style="background:var(--bg-alt);color:var(--primary);border:1px solid var(--primary);">📋 Copy</button><button class="btn-generate" onclick="clearEvent(${i})" style="background:var(--bg-alt);color:#c0392b;border:1px solid #c0392b;">🗑 Clear</button>`:''}
       </div>
       ${ev.type==='friday'&&!ev.locked?`<div style="margin-top:8px;font-size:.75rem;"><button onclick="toggleCongregation(${i},${!hasCongregation(ev)})" style="background:${hasCongregation(ev)?'#0068b3':'#ccc'};color:#fff;border:none;border-radius:12px;padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Youth Congregation: ${hasCongregation(ev)?'ON':'OFF'}</button></div>`:''}
     </div>
@@ -1353,6 +1353,21 @@ function unconfirmRoster(i){
   showToast('Roster unconfirmed');
   renderEventList();
   renderMainForEvent(i);
+}
+
+function clearEvent(i){
+  const ev=events[i];
+  if(!ev)return;
+  if(!confirm('Clear all duty assignments for '+ev.name+'? This cannot be undone.'))return;
+  delete generatedRosters[ev.id];
+  delete manualOverrides[ev.id];
+  confirmedRosters.delete(ev.id);
+  hasUnsavedChanges.delete(ev.id);
+  recalculateCountsFromState();
+  saveState();
+  renderEventList();
+  renderMainForEvent(i);
+  showToast('Event cleared \u2713');
 }
 
 function toggleCongregation(i,checked){
