@@ -196,25 +196,25 @@ const CYCLES=[
   {team:'B',label:'Dec 9 – Jan 2027',events:[{date:'2026-12-09',name:'Chandraat'},{date:'2026-12-11',name:'Friday Majlis'},{date:'2026-12-12',name:'Baithulkhayal'},{date:'2026-12-17',name:'Paanch Baar Saal'},{date:'2026-12-18',name:'Friday Majlis'},{date:'2026-12-19',name:'Student Mijalis'},{date:'2026-12-21',name:'Yawm-i Ali'},{date:'2026-12-25',name:'Friday Majlis'}]},
 ];
 const CONTACTS=[
-  {role:'Council Member',name:'Salman Momin',phone:'+64 22 070 6786',email:'ssjinnah@gmail.com'},
-  {role:'Asst. CMC',name:'Sameer Hirani',phone:'+64 22 397 9442',email:'sameerhirani99@gmail.com'},
-  {role:'IVC Director',name:'Irfan Jama',phone:'+64 22 571 3757',email:'jaliairfan@gmail.com'},
-  {role:'Deputy Director',name:'Shahzad Saleem',phone:'+64 20 4057 2575',email:''},
-  {role:'Facilitator',name:'Muskaan Somjee',phone:'+64 20 4065 7515',email:'muskaansomjee@gmail.com'},
-  {role:'Team Lead A',name:'Irfan Ismail',phone:'+64 27 258 6371',email:'iirfanih@gmail.com'},
-  {role:'Asst. Team Lead A',name:'Aaliyah Vishram',phone:'',email:'aaliyahvishram@gmail.com'},
-  {role:'Team Lead B',name:'Karishma Dharani',phone:'+64 29 777 8786',email:'tabbudharani@gmail.com'},
-  {role:'Asst. Team Lead B',name:'Ahad Lokhandwala',phone:'',email:'ahadloks@gmail.com'},
-  {role:'Team Lead',name:'Rumina Kotadia',phone:'+64 22 137 0350',email:'ruminaamin@gmail.com'},
-  {role:'Team Lead',name:'Sadiq Daredia',phone:'+64 22 356 8786',email:''},
-  {role:'Team Lead',name:'Adeel Punjwani',phone:'',email:'adeel.punjwani@gmail.com'},
-  {role:'Team Lead',name:'Rahim Ismail',phone:'',email:'rahim.ismail0821@gmail.com'},
-  {role:'Safety Lead',name:'Riyaz Sutar',phone:'+64 20 400 00134',email:''},
-  {role:'Medical Centre',name:'Northcare Accident & Medical',phone:'09-479 7770',addr:'5 Home Place, Rosedale'},
-  {role:'Hospital',name:'North Shore Hospital',phone:'09-486 8900',addr:'124 Shakespeare Rd, Takapuna'},
-  {role:'Police',name:'North Shore Police',phone:'09-477 5000',addr:'52 Parkway Drive, Rosedale'},
-  {role:'Emergency',name:'',phone:'111'},
-  {role:'Non-Emergency',name:'',phone:'105'},
+  {role:'Council Member',name:'Salman Momin',phone:'+64 22 070 6786',email:'ssjinnah@gmail.com',group:'council'},
+  {role:'Asst. CMC',name:'Sameer Hirani',phone:'+64 22 397 9442',email:'sameerhirani99@gmail.com',group:'council'},
+  {role:'IVC Director',name:'Irfan Jalia',phone:'+64 22 571 3757',email:'jaliairfan@gmail.com',group:'council'},
+  {role:'Deputy Director',name:'Shahzad Saleem',phone:'+64 20 4057 2575',email:'',group:'council'},
+  {role:'Facilitator',name:'Muskaan Somjee',phone:'+64 20 4065 7515',email:'muskaansomjee@gmail.com',group:'council'},
+  {role:'Team Lead',name:'Irfan Ismail',phone:'+64 27 258 6371',email:'iirfanih@gmail.com',group:'teamA'},
+  {role:'Team Lead',name:'Karishma Dharani',phone:'+64 29 777 8786',email:'tabbudharani@gmail.com',group:'teamA'},
+  {role:'Asst. Team Lead',name:'Aaliyah Vishram',phone:'',email:'aaliyahvishram@gmail.com',group:'teamA'},
+  {role:'Team Lead',name:'Rumina Kotadia',phone:'+64 22 137 0350',email:'ruminaamin@gmail.com',group:'teamB'},
+  {role:'Team Lead',name:'Sadiq Daredia',phone:'+64 22 356 8786',email:'',group:'teamB'},
+  {role:'Asst. Team Lead',name:'Ahad Lokhandwala',phone:'',email:'ahadloks@gmail.com',group:'teamB'},
+  {role:'Team Lead',name:'Adeel Punjwani',phone:'',email:'adeel.punjwani@gmail.com',group:'other'},
+  {role:'Team Lead',name:'Rahim Ismail',phone:'',email:'rahim.ismail0821@gmail.com',group:'other'},
+  {role:'Safety Lead',name:'Riyaz Sutar',phone:'+64 20 400 00134',email:'',group:'safety'},
+  {role:'Medical Centre',name:'Northcare Accident & Medical',phone:'09-479 7770',addr:'5 Home Place, Rosedale',group:'emergency'},
+  {role:'Hospital',name:'North Shore Hospital',phone:'09-486 8900',addr:'124 Shakespeare Rd, Takapuna',group:'emergency'},
+  {role:'Police',name:'North Shore Police',phone:'09-477 5000',addr:'52 Parkway Drive, Rosedale',group:'emergency'},
+  {role:'Emergency',name:'',phone:'111',group:'emergency'},
+  {role:'Non-Emergency',name:'',phone:'105',group:'emergency'},
 ];
 
 let currentProfile=null;
@@ -287,9 +287,24 @@ function renderCalendar(){
 }
 
 function renderLeadership(){
+  const groups=[
+    {key:'council',label:'IVC Leadership'},
+    {key:'teamA',label:'Team A'},
+    {key:'teamB',label:'Team B'},
+    {key:'other',label:'Other Team Leads'},
+    {key:'safety',label:'Safety'},
+    {key:'emergency',label:'Emergency Contacts'},
+  ];
   let h='<div class="page-title">👥 Leadership & Contacts</div><div class="page-sub">Auckland Jamatkhana — 2-4 Ascension Place, Rosedale</div>';
-  CONTACTS.forEach(c=>{
-    h+=`<div class="contact-card"><span class="cc-role">${c.role}</span><span class="cc-name">${c.name||'—'}</span><span class="cc-phone">${c.phone}</span>${c.email?'<span class="cc-email">'+c.email+'</span>':''}${c.addr?'<span class="cc-addr">'+c.addr+'</span>':''}</div>`;
+  groups.forEach(g=>{
+    const items=CONTACTS.filter(c=>c.group===g.key);
+    if(!items.length)return;
+    h+=`<div class="doc-section" style="margin-bottom:14px;"><h3>${g.label}</h3>
+      <table><thead><tr><th style="width:160px;">Role</th><th>Name</th><th>Phone</th><th>Email</th></tr></thead><tbody>`;
+    items.forEach(c=>{
+      h+=`<tr><td style="font-weight:600;color:var(--dt);">${c.role}</td><td>${c.name||'—'}</td><td style="font-family:monospace;color:var(--blue-lt);">${c.phone||'—'}</td><td style="color:var(--green);">${c.email||c.addr||'—'}</td></tr>`;
+    });
+    h+=`</tbody></table></div>`;
   });
   document.getElementById('page-leadership').innerHTML=h;
 }
