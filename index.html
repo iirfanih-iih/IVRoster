@@ -7,7 +7,7 @@
 <meta property="og:title" content="IV Roster — Auckland Jamatkhana">
 <meta property="og:description" content="Ismaili Volunteers Roster Generator">
 <meta property="og:type" content="website">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230A1F3D'/%3E%3Ctext x='16' y='22' font-family='sans-serif' font-size='14' font-weight='900' fill='%234FC3F7' text-anchor='middle'%3EIV%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="iv-logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&family=Barlow:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
@@ -122,7 +122,7 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
 <div id="loginScreen">
   <div class="lbox">
     <div class="llogo">
-      <div class="llogo-iv">IV</div>
+      <img src="iv-logo.png" alt="IV" style="height:40px;margin-bottom:10px;">
       <h1>IV Roster</h1>
       <p>Auckland Jamatkhana · Ismaili Volunteers</p>
     </div>
@@ -146,7 +146,7 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
   <div class="app-layout">
     <div class="sidebar">
       <div class="sb-logo">
-        <div class="llogo-iv">IV</div>
+        <img src="iv-logo.png" alt="IV" style="height:36px;margin-bottom:6px;">
         <h2>IV Roster</h2>
         <p>Auckland Jamatkhana</p>
       </div>
@@ -157,7 +157,7 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
       </div>
       <div class="nav-group">
         <div class="nav-label">Info</div>
-        <a class="nav-item" onclick="navTo('leadership')"><span class="ni-icon">👥</span><span>Leadership</span></a>
+        <a class="nav-item" onclick="navTo('leadership')"><span class="ni-icon">👥</span><span>Leadership & Contacts</span></a>
         <a class="nav-item" onclick="navTo('guide')"><span class="ni-icon">📑</span><span>Duty Guide & FAQ</span></a>
         <a class="nav-item" onclick="navTo('docs')"><span class="ni-icon">📖</span><span>Documentation</span></a>
       </div>
@@ -207,8 +207,6 @@ const CONTACTS=[
   {role:'Team Lead',name:'Rumina Kotadia',phone:'+64 22 137 0350',email:'ruminaamin@gmail.com',group:'teamB'},
   {role:'Team Lead',name:'Sadiq Daredia',phone:'+64 22 356 8786',email:'',group:'teamB'},
   {role:'Asst. Team Lead',name:'Ahad Lokhandwala',phone:'',email:'ahadloks@gmail.com',group:'teamB'},
-  {role:'Team Lead',name:'Adeel Punjwani',phone:'',email:'adeel.punjwani@gmail.com',group:'other'},
-  {role:'Team Lead',name:'Rahim Ismail',phone:'',email:'rahim.ismail0821@gmail.com',group:'other'},
   {role:'Safety Lead',name:'Riyaz Sutar',phone:'+64 20 400 00134',email:'',group:'safety'},
   {role:'Medical Centre',name:'Northcare Accident & Medical',phone:'09-479 7770',addr:'5 Home Place, Rosedale',group:'emergency'},
   {role:'Hospital',name:'North Shore Hospital',phone:'09-486 8900',addr:'124 Shakespeare Rd, Takapuna',group:'emergency'},
@@ -291,7 +289,6 @@ function renderLeadership(){
     {key:'council',label:'IVC Leadership'},
     {key:'teamA',label:'Team A'},
     {key:'teamB',label:'Team B'},
-    {key:'other',label:'Other Team Leads'},
     {key:'safety',label:'Safety'},
     {key:'emergency',label:'Emergency Contacts'},
   ];
@@ -300,9 +297,9 @@ function renderLeadership(){
     const items=CONTACTS.filter(c=>c.group===g.key);
     if(!items.length)return;
     h+=`<div class="doc-section" style="margin-bottom:14px;"><h3>${g.label}</h3>
-      <table><thead><tr><th style="width:160px;">Role</th><th>Name</th><th>Phone</th><th>Email</th></tr></thead><tbody>`;
+      <table><thead><tr><th style="width:160px;">Role</th><th>Name</th><th>Phone</th><th>Email</th><th>Address</th></tr></thead><tbody>`;
     items.forEach(c=>{
-      h+=`<tr><td style="font-weight:600;color:var(--dt);">${c.role}</td><td>${c.name||'—'}</td><td style="font-family:monospace;color:var(--blue-lt);">${c.phone||'—'}</td><td style="color:var(--green);">${c.email||c.addr||'—'}</td></tr>`;
+      h+=`<tr><td style="font-weight:600;color:var(--dt);">${c.role}</td><td>${c.name||'—'}</td><td style="font-family:monospace;color:var(--blue-lt);">${c.phone||'—'}</td><td style="color:var(--green);">${c.email||''}</td>${c.addr?'<td style="color:var(--dm);">'+c.addr+'</td>':''}</tr>`;
     });
     h+=`</tbody></table></div>`;
   });

@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IV Team B – Roster Generator</title>
+<link rel="icon" type="image/png" href="iv-logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
@@ -397,11 +398,17 @@ const DUTY_ASSIGNMENT_CONFIG = {
 // INIT
 // ══════════════════════════════════════
 async function init() {
-  await checkAuth();
   setupEvents();
-  if (!(await loadState())) { resetCycle(true); }
+  const localState = localStorage.getItem('rosterGeneratorStateB');
+  if(localState){
+    const s=JSON.parse(localState);
+    generatedRosters=s.generatedRosters||{};
+    manualOverrides=s.manualOverrides||{};
+    confirmedRosters=new Set(s.confirmedRosters||[]);
+  }
   recalculateCountsFromState();
-  await loadMemberState();
+  const localMembers=localStorage.getItem('memberState_'+CURRENT_TEAM);
+  if(localMembers) applyMemberState(JSON.parse(localMembers));
   updateMemberSummary();
   renderEventList();
   document.getElementById('addEventBtn').addEventListener('click', openAddEventModal);
@@ -415,6 +422,19 @@ async function init() {
   if (selectedEventIdx === -1) selectedEventIdx = 0;
   currentTab = 'event';
   renderMainForEvent(selectedEventIdx);
+
+  checkAuth().then(async ()=>{
+    if(!_supabase || SUPABASE_URL.includes('YOUR_PROJECT')) return;
+    const loaded = await loadState();
+    if(loaded){
+      recalculateCountsFromState();
+      await loadMemberState();
+      updateMemberSummary();
+      renderEventList();
+      renderMainForEvent(selectedEventIdx);
+    }
+    await saveState();
+  }).catch(()=>{});
 }
 function resetCounts(){dutyCounts={};prevAssign={};[...MEMBERS.male,...MEMBERS.female].forEach(m=>dutyCounts[m.name]=0);}
 function recalculateCountsFromState() {
