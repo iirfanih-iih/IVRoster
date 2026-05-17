@@ -207,6 +207,9 @@ async function checkAuth() {
     if (!currentProfile) { window.location.href = 'index.html'; return false; }
     canEdit = currentProfile.role === 'admin' || (currentProfile.role === 'team_leader' && currentProfile.team === CURRENT_TEAM);
     if (!canEdit) document.body.classList.add('view-only');
+    window._currentUserEmail = currentProfile.email;
+    window._currentUserName = currentProfile.name || currentProfile.email;
+    auditLog('Page loaded', 'access', 'Team B - Role: '+currentProfile.role);
     const headerDiv = document.querySelector('header div');
     if (headerDiv) {
       headerDiv.innerHTML += `<p style="font-size:.7rem;color:var(--text-light);margin-top:2px;">${currentProfile.name || currentProfile.email} · ${canEdit ? 'Full Access' : 'View Only'} <a href="#" onclick="signOut()" style="color:var(--primary);margin-left:8px;">Sign Out</a></p>`;
@@ -827,7 +830,7 @@ function saveManualEntry(i){
   recalculateCountsFromState();
   renderEventList();
   renderMainForEvent(i);
-  showToast('Manual roster saved \u2713');
+  auditLog('Manual roster saved','roster','Event: '+ev.name);showToast('Manual roster saved \u2713');
 }
 
 function generateRoster(i) {
@@ -844,7 +847,7 @@ function generateRoster(i) {
   renderEventList();
   saveState();
   renderMainForEvent(i);
-  showToast('Roster generated ✓');
+  auditLog('Roster generated','roster','Event: '+ev.name);showToast('Roster generated ✓');
   setTimeout(()=>{const c=document.querySelector('.roster-card');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},100);
 }
 
@@ -1398,7 +1401,7 @@ function unconfirmRoster(i){
   if(!ev)return;
   confirmedRosters.delete(ev.id);
   saveState();
-  showToast('Roster unconfirmed');
+  auditLog('Roster unconfirmed','roster','Event: '+ev.name);showToast('Roster unconfirmed');
   renderEventList();
   renderMainForEvent(i);
 }
@@ -1415,7 +1418,7 @@ function clearEvent(i){
   saveState();
   renderEventList();
   renderMainForEvent(i);
-  showToast('Event cleared \u2713');
+  auditLog('Event cleared','roster','Event: '+ev.name);showToast('Event cleared \u2713');
 }
 
 function toggleCongregation(i,checked){
@@ -1429,7 +1432,7 @@ function confirmRoster(i){
   if(!ev)return;
   confirmedRosters.add(ev.id);
   saveState();
-  showToast('Roster confirmed ✓');
+  auditLog('Roster confirmed','roster','Event: '+ev.name);showToast('Roster confirmed ✓');
   renderEventList();
   renderMainForEvent(i);
 }
@@ -1483,7 +1486,7 @@ function confirmSubstitute(){
   hasUnsavedChanges.add(ev.id);
 
   saveState();
-  closeModal('subModal');subContext=null;
+  auditLog('Substitution made','roster','Replaced '+remFinal+' with '+addName);closeModal('subModal');subContext=null;
   renderMainForEvent(evIdx);renderEventList();
 }
 

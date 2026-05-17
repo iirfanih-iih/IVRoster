@@ -258,6 +258,9 @@ async function checkAuthAndRoute(){
   document.getElementById('userName').textContent=profile.name||profile.email;
   document.getElementById('userRole').textContent=(roleLabels[profile.role]||profile.role)+(profile.team?' · Team '+profile.team:'');
   if(profile.role==='admin')document.getElementById('adminNav').style.display='block';
+  window._currentUserEmail=profile.email;
+  window._currentUserName=profile.name||profile.email;
+  auditLog('Login','auth','Role: '+profile.role+(profile.team?' Team '+profile.team:''));
   // Load saved leadership contacts
   await loadLeadershipContacts();
   renderHome();
@@ -406,7 +409,7 @@ async function saveLeadership(){
     await _supabase.from('app_settings').upsert({key:'leadership_contacts',value:JSON.stringify(CONTACTS)},{onConflict:'key'});
   }
   localStorage.setItem('iv_leadership',JSON.stringify(CONTACTS));
-  toggleLeadershipEdit();
+  auditLog("Leadership contacts updated","settings","");toggleLeadershipEdit();
   renderLeadership();
 }
 

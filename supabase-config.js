@@ -167,3 +167,29 @@ async function dbLoadMemberState(team) {
     return typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
   } catch(e) { return null; }
 }
+
+
+// ══════════════════════════════════════
+// AUDIT LOGGING
+// ══════════════════════════════════════
+let _clientIP = '';
+// Fetch public IP on load
+fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>{_clientIP=d.ip||'';}).catch(()=>{});
+
+async function auditLog(action, category, detail) {
+  const entry = {
+    ts: new Date().toISOString(),
+    username: window._currentUserEmail || 'unknown',
+    user_display: window._currentUserName || 'Unknown',
+    action: action || '',
+    category: category || '',
+    detail: detail || '',
+    ip: _clientIP || ''
+  };
+  if (_supabase && !SUPABASE_URL.includes('YOUR_PROJECT')) {
+    try {
+      await _supabase.from('audit_logs').insert(entry);
+    } catch(e) { console.warn('Audit log failed:', e); }
+  }
+  console.log('AUDIT:', entry.action, entry.detail, entry.ip);
+}
