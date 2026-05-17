@@ -182,7 +182,13 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
         <a class="nav-item" href="admin.html"><span class="ni-icon">⚙️</span><span>Admin Panel</span></a>
       </div>
       <div class="sb-footer">
-        <div class="sb-user"><strong id="userName"></strong><span id="userRole"></span></div>
+        <div class="sb-user" style="cursor:pointer;" onclick="document.getElementById('userMenu').style.display=document.getElementById('userMenu').style.display==='none'?'block':'none';"><strong id="userName"></strong><span id="userRole"></span></div>
+        <div id="userMenu" style="display:none;background:var(--ds2);border:1px solid var(--db);border-radius:8px;padding:6px;margin:6px 0;">
+          <button onclick="selfChangePassword()" style="display:block;width:100%;text-align:left;background:none;border:none;padding:7px 10px;font-size:10px;color:var(--dt);cursor:pointer;font-family:Lexend,sans-serif;border-radius:4px;"
+            onmouseover="this.style.background='var(--ds)'" onmouseout="this.style.background='none'">🔒 Change Password</button>
+          <button onclick="signOut()" style="display:block;width:100%;text-align:left;background:none;border:none;padding:7px 10px;font-size:10px;color:#f88;cursor:pointer;font-family:Lexend,sans-serif;border-radius:4px;"
+            onmouseover="this.style.background='var(--ds)'" onmouseout="this.style.background='none'">🚪 Sign Out</button>
+        </div>
         <div style="display:flex;gap:6px;margin-top:8px;">
           <button class="btn-logout" onclick="signOut()" style="flex:1;">Sign Out</button>
           <button id="themeToggle" onclick="cycleTheme()" style="background:none;border:1px solid var(--db);border-radius:6px;padding:5px 10px;font-size:1rem;cursor:pointer;" title="Toggle theme">🌙</button>
@@ -238,6 +244,59 @@ let CONTACTS=[
 
 let currentProfile=null;
 
+async function handlePasswordRecovery(){
+  // User arrived via reset link — show password reset form
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('dashboard').style.display='none';
+  let div=document.getElementById('resetView');
+  if(!div){
+    div=document.createElement('div');
+    div.id='resetView';
+    div.style.cssText='position:fixed;inset:0;background:var(--dp);z-index:1000;display:flex;align-items:center;justify-content:center;';
+    div.innerHTML=`<div class="lbox"><div class="llogo"><img src="iv-logo.png" alt="IV" style="height:40px;margin-bottom:10px;"><h1>Reset Password</h1><p>Enter your new password below</p></div><div class="lfg"><label>New Password</label><input type="password" id="resetPw1" placeholder="New password"></div><div class="lfg"><label>Confirm Password</label><input type="password" id="resetPw2" placeholder="Confirm password"></div><div style="font-size:10px;color:var(--dm);margin-bottom:12px;line-height:1.6;">Requirements: 8+ characters, 1 uppercase, 1 number, 1 special character</div><button class="lbtn" onclick="doPasswordReset()">Update Password</button><div class="lerr" id="resetErr"></div></div>`;
+    document.body.appendChild(div);
+  }
+  div.style.display='flex';
+}
+async function doPasswordReset(){
+  const pw1=document.getElementById('resetPw1').value;
+  const pw2=document.getElementById('resetPw2').value;
+  const err=document.getElementById('resetErr');
+  err.textContent='';
+  if(pw1!==pw2){err.textContent='Passwords do not match.';return;}
+  const errors=validatePassword(pw1);
+  if(errors.length){err.textContent=errors.join(', ');return;}
+  try{
+    const{error}=await _supabase.auth.updateUser({password:pw1});
+    if(error)throw error;
+    // Remove force flag if exists
+    const session=await getSession();
+    if(session) await _supabase.from('app_settings').delete().eq('key','force_pw_change_'+session.user.id);
+    alert('Password updated successfully! Please sign in with your new password.');
+    await _supabase.auth.signOut();
+    window.location.href='index.html';
+  }catch(e){err.textContent='Failed: '+(e.message||e);}
+}
+async function selfChangePassword(){
+  const current=prompt('Enter your current password:');
+  if(!current)return;
+  const newPw=prompt('Enter new password:\n\nRequirements:\n- 8+ characters\n- 1 uppercase\n- 1 number\n- 1 special character');
+  if(!newPw)return;
+  const errors=validatePassword(newPw);
+  if(errors.length){alert('Password does not meet requirements:\n- '+errors.join('\n- '));return;}
+  try{
+    // Verify current password by re-authenticating
+    const email=currentProfile?.email;
+    if(!email){alert('Error: no email found.');return;}
+    const{error:signInErr}=await _supabase.auth.signInWithPassword({email,password:current});
+    if(signInErr){alert('Current password is incorrect.');return;}
+    const{error}=await _supabase.auth.updateUser({password:newPw});
+    if(error)throw error;
+    alert('Password changed successfully!');
+    auditLog('Password changed (self-service)','auth','');
+  }catch(e){alert('Failed: '+(e.message||e));}
+}
+
 async function forgotPassword(){
   const email=document.getElementById('emailInput').value.trim();
   if(!email){alert('Please enter your email address first, then click Forgot Password.');return;}
@@ -266,6 +325,13 @@ async function handleLogin(e){
 }
 
 async function checkAuthAndRoute(){
+  // Detect password recovery redirect
+  const hashParams=new URLSearchParams(window.location.hash.substring(1));
+  const urlParams=new URLSearchParams(window.location.search);
+  if(hashParams.get('type')==='recovery'||urlParams.get('type')==='recovery'){
+    await handlePasswordRecovery();
+    return;
+  }
   const session=await getSession();
   if(!session){document.getElementById('loginScreen').style.display='flex';document.getElementById('dashboard').style.display='none';return;}
   const profile=await getUserProfile();
