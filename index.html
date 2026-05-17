@@ -174,6 +174,7 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
         <a class="nav-item" onclick="navTo('leadership')"><span class="ni-icon">👥</span><span>Leadership & Contacts</span></a>
         <a class="nav-item" onclick="navTo('guide')"><span class="ni-icon">📑</span><span>Duty Guide & FAQ</span></a>
         <a class="nav-item" onclick="navTo('docs')"><span class="ni-icon">📖</span><span>Documentation</span></a>
+        <a class="nav-item" onclick="navTo('feedback')"><span class="ni-icon">💬</span><span>Feedback</span></a>
       </div>
       <div class="nav-group" id="adminNav" style="display:none;">
         <div class="nav-label">Admin</div>
@@ -193,6 +194,7 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
       <div id="page-leadership" class="page"></div>
       <div id="page-guide" class="page"></div>
       <div id="page-docs" class="page"></div>
+      <div id="page-feedback" class="page"></div>
     </div>
   </div>
 </div>
@@ -267,7 +269,7 @@ async function checkAuthAndRoute(){
   renderCalendar();
   renderLeadership();
   renderGuide();
-  renderDocs();
+  renderDocs();renderFeedback();
 }
 
 function navTo(page){
@@ -540,6 +542,49 @@ function renderDocs(){
     </ul></div>`;
 }
 
+// -- FEEDBACK SYSTEM --
+let feedbackPosts=[];
+async function renderFeedback(){
+  await loadFeedback();
+  let h='<div class="page-title">Feedback &amp; Suggestions</div><div class="page-sub">Report bugs, suggest features, or share feedback. All team members can participate.</div>';
+  h+='<div style="background:var(--ds);border:1px solid var(--db);border-radius:12px;padding:18px;margin-bottom:20px;">';
+  h+='<select id="fbType" style="background:var(--ds2);border:1px solid var(--db);border-radius:8px;padding:8px 12px;color:var(--dt);font-size:12px;font-family:Lexend,sans-serif;margin-bottom:10px;"><option value="bug">Bug Report</option><option value="feature">Feature Request</option><option value="suggestion">Suggestion</option><option value="feedback">General Feedback</option><option value="qa">QA Note</option></select>';
+  h+='<textarea id="fbText" placeholder="Describe your feedback, bug, or suggestion..." style="width:100%;min-height:80px;background:var(--ds2);border:1px solid var(--db);border-radius:8px;padding:10px 14px;color:var(--dt);font-size:12px;font-family:Lexend,sans-serif;resize:vertical;outline:none;"></textarea>';
+  h+='<button onclick="submitFeedback()" style="margin-top:10px;background:linear-gradient(135deg,#0C2461,#1976D2);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lexend,sans-serif;">Submit</button></div>';
+  h+='<div id="fbList">'+renderFeedbackList()+'</div>';
+  document.getElementById('page-feedback').innerHTML=h;
+}
+function renderFeedbackList(){
+  if(!feedbackPosts.length) return '<div style="text-align:center;padding:30px;color:var(--dm);font-size:12px;">No feedback yet. Be the first to share!</div>';
+  return feedbackPosts.map(function(p){
+    var d=new Date(p.ts);var ts=d.toLocaleDateString('en-NZ',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-NZ',{hour:'2-digit',minute:'2-digit'});
+    var labels={bug:'Bug',feature:'Feature',suggestion:'Suggestion',feedback:'Feedback',qa:'QA'};
+    var html='<div style="background:var(--ds);border:1px solid var(--db);border-radius:10px;padding:14px 16px;margin-bottom:10px;">';
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:10px;font-weight:700;color:var(--blue-lt);">'+(labels[p.type]||p.type)+'</span><span style="font-size:11px;font-weight:600;color:var(--dt);">'+(p.user_display||'Anonymous')+'</span><span style="font-size:10px;color:var(--dm);margin-left:auto;">'+ts+'</span></div>';
+    html+='<div style="font-size:12px;color:var(--dt);line-height:1.6;white-space:pre-wrap;">'+((p.text||'').replace(/</g,'&lt;'))+'</div>';
+    if(p.replies&&p.replies.length) p.replies.forEach(function(r){html+='<div style="margin-top:10px;padding:10px 12px;background:var(--ds2);border-radius:8px;border-left:3px solid var(--blue-lt);"><div style="font-size:10px;color:var(--dm);"><strong style="color:var(--dt);">'+r.user+'</strong></div><div style="font-size:11px;color:var(--dt);">'+((r.text||'').replace(/</g,'&lt;'))+'</div></div>';});
+    html+='<div style="margin-top:8px;"><button onclick="replyToFeedback(\''+p.id+'\')" style="background:none;border:1px solid var(--db);border-radius:6px;padding:4px 10px;font-size:10px;color:var(--dm);cursor:pointer;font-family:Lexend,sans-serif;">Reply</button></div></div>';
+    return html;
+  }).join('');
+}
+async function loadFeedback(){if(!_supabase||SUPABASE_URL.includes('YOUR_PROJECT'))return;try{var r=await _supabase.from('feedback').select('*').order('ts',{ascending:false}).limit(50);feedbackPosts=r.data||[];}catch(e){feedbackPosts=[];}}
+async function submitFeedback(){
+  var type=document.getElementById('fbType').value,text=document.getElementById('fbText').value.trim();
+  if(!text){alert('Please enter feedback.');return;}
+  var post={id:Date.now().toString(),type:type,text:text,ts:new Date().toISOString(),username:window._currentUserEmail||'unknown',user_display:window._currentUserName||'Anonymous',replies:[]};
+  if(_supabase&&!SUPABASE_URL.includes('YOUR_PROJECT')){try{await _supabase.from('feedback').insert(post);}catch(e){}}
+  feedbackPosts.unshift(post);document.getElementById('fbText').value='';
+  document.getElementById('fbList').innerHTML=renderFeedbackList();
+  auditLog('Feedback submitted','feedback',type+': '+text.slice(0,50));
+}
+async function replyToFeedback(pid){
+  var text=prompt('Your reply:');if(!text||!text.trim())return;
+  var reply={user:window._currentUserName||'Anonymous',text:text.trim(),ts:new Date().toISOString()};
+  var post=feedbackPosts.find(function(p){return p.id==pid;});if(!post)return;
+  if(!post.replies)post.replies=[];post.replies.push(reply);
+  if(_supabase&&!SUPABASE_URL.includes('YOUR_PROJECT')){try{await _supabase.from('feedback').update({replies:post.replies}).eq('id',post.id);}catch(e){}}
+  document.getElementById('fbList').innerHTML=renderFeedbackList();
+}
 checkAuthAndRoute();
 document.getElementById('emailInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('passwordInput').focus();});
 </script>

@@ -82,9 +82,19 @@ async function signOut() {
 // ══════════════════════════════════════
 // DB HELPERS
 // ══════════════════════════════════════
-async function dbLoadRosters(team) {
+async function dbLoadRosters(team, priorityEventIds) {
   if(!_supabase){ setSyncStatus('off'); return []; }
   setSyncStatus('saving');
+  // If priority IDs provided, load those first for fast render
+  if(priorityEventIds && priorityEventIds.length){
+    const { data: priority } = await _supabase.from('rosters').select('*').eq('team', team).in('event_id', priorityEventIds);
+    // Load rest in background
+    _supabase.from('rosters').select('*').eq('team', team).then(({data:all})=>{
+      if(all && window._onFullRostersLoaded) window._onFullRostersLoaded(all);
+    });
+    setSyncStatus('ok');
+    return priority || [];
+  }
   const { data, error } = await _supabase.from('rosters').select('*').eq('team', team);
   if(error){ setSyncStatus('error'); console.error(error); return []; }
   setSyncStatus('ok');

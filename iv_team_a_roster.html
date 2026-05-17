@@ -1792,7 +1792,20 @@ async function loadState() {
   if(_supabase && !SUPABASE_URL.includes('YOUR_PROJECT')){
     try{
       setSyncStatus('saving');
-      const rosters = await dbLoadRosters(CURRENT_TEAM);
+      // Get current cycle event IDs for priority loading
+      const today=startOfDay(new Date());
+      const allSorted=[...events].sort((a,b)=>new Date(a.dateRaw)-new Date(b.dateRaw));
+      const cycles=[];allSorted.forEach(ev=>{if(ev.type==='chandraat'||cycles.length===0)cycles.push([]);cycles[cycles.length-1].push(ev);});
+      let currentIds=[];
+      for(const c of cycles){const s=startOfDay(new Date(c[0].dateRaw)),e=startOfDay(new Date(c[c.length-1].dateRaw));if(s<=today&&e>=today){currentIds=c.map(ev=>ev.id);break;}}
+      // Load current cycle first, then rest in background
+      window._onFullRostersLoaded=(all)=>{
+        if(!all)return;
+        all.forEach(r=>{if(!generatedRosters[r.event_id]){generatedRosters[r.event_id]=r.roster;if(r.confirmed)confirmedRosters.add(r.event_id);}});
+        recalculateCountsFromState();
+        localStorage.setItem('rosterGeneratorState',JSON.stringify({events,generatedRosters,manualOverrides,confirmedRosters:Array.from(confirmedRosters)}));
+      };
+      const rosters = await dbLoadRosters(CURRENT_TEAM, currentIds.length?currentIds:null);
       if(rosters && rosters.length){
         generatedRosters = {};
         manualOverrides = {};
