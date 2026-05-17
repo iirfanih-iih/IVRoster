@@ -277,18 +277,19 @@ async function logAudit(action,category,detail){
 
 function renderAudit(){
   let h=`<div class="card"><div class="card-title">Audit Logs (${auditLogs.length})</div>
-    <div class="search-box"><input id="auditFilter" placeholder="Filter logs..." oninput="filterAudit()"></div>
+    <div class="search-box"><input id="auditFilter" placeholder="Filter logs..." oninput="filterAudit()"><button class="btn btn-outline btn-sm" onclick="loadAuditLogs().then(renderAudit)" style="white-space:nowrap;">Refresh</button></div>
     <div id="auditList" style="max-height:500px;overflow-y:auto;">`;
+  if(!auditLogs.length)h+='<div class="empty">No audit logs found. Check Supabase connection.</div>';
   auditLogs.slice(0,100).forEach(l=>{
     const d=new Date(l.ts);
-    const ts=d.toLocaleDateString('en-NZ',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-NZ',{hour:'2-digit',minute:'2-digit'});
+    const ts=d.toLocaleDateString('en-NZ',{day:'numeric',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-NZ',{hour:'2-digit',minute:'2-digit'});
     h+=`<div class="audit-entry">
       <span class="audit-ts">${ts}</span>
       <span class="audit-user">${l.user_display||l.username||'—'}</span>
       <span class="audit-action">${l.action||''} ${l.detail?'<span class="audit-cat">'+l.detail+'</span>':''}</span>
+      ${l.ip?'<span style="font-size:.65rem;color:#888;font-family:monospace;">'+l.ip+'</span>':''}
     </div>`;
   });
-  if(!auditLogs.length)h+='<div class="empty">No audit logs yet.</div>';
   h+=`</div></div>`;
   document.getElementById('auditPanel').innerHTML=h;
 }

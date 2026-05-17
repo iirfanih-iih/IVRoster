@@ -282,20 +282,20 @@ async function doPasswordReset(){
 async function selfChangePassword(){
   const current=await ivPrompt('Enter your current password:');
   if(!current)return;
-  const newPw=await ivPrompt('Enter new password:\n\nRequirements:\n- 8+ characters\n- 1 uppercase\n- 1 number\n- 1 special character');
+  const newPw=await ivPrompt('Enter new password:\n\nRequirements:\n- 8+ characters\n- 1 uppercase\n- 1 number\n- 1 special character\n\nNote: You will be logged out after changing your password and will need to sign in again with the new password.');
   if(!newPw)return;
   const errors=validatePassword(newPw);
   if(errors.length){alert('Password does not meet requirements:\n- '+errors.join('\n- '));return;}
   try{
-    // Verify current password by re-authenticating
     const email=currentProfile?.email;
     if(!email){alert('Error: no email found.');return;}
     const{error:signInErr}=await _supabase.auth.signInWithPassword({email,password:current});
     if(signInErr){alert('Current password is incorrect.');return;}
     const{error}=await _supabase.auth.updateUser({password:newPw});
     if(error)throw error;
-    alert('Password changed successfully!');
     auditLog('Password changed (self-service)','auth','');
+    alert('Password changed successfully! You will now be signed out. Please log in again with your new password.');
+    signOut();
   }catch(e){alert('Failed: '+(e.message||e));}
 }
 

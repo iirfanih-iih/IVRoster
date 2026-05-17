@@ -283,7 +283,7 @@ async function checkForcePasswordChange() {
       if (error) { alert('Failed to update password: ' + error.message); await signOut(); return; }
       // Remove force flag
       await _supabase.from('app_settings').delete().eq('key', 'force_pw_change_' + session.user.id);
-      alert('Password updated successfully!');
+      alert('Password updated successfully! You will now be signed out. Please log in with your new password.');await signOut();
     }
   } catch(e) { console.warn('Force PW check failed:', e); }
 }
