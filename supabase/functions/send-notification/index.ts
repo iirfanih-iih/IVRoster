@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-const RESEND_API_KEY = 're_XexNfD3M_BSmv3uGNyMdVvotZNooj3CQ7';
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') || '';
 const NOTIFY_EMAIL = 'iirfanih@gmail.com';
 const FROM_EMAIL = 'IV Roster <onboarding@resend.dev>';
 
