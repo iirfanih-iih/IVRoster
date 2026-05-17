@@ -88,6 +88,8 @@ let auditLogs = [];
 // ── Init ──
 async function init(){
   try{
+    // Wait for Supabase to be ready
+    if(!_supabase){await new Promise(r=>{const c=setInterval(()=>{if(_supabase){clearInterval(c);r();}},100);setTimeout(()=>{clearInterval(c);r();},3000);});}
     const session = await getSession();
     if(!session){window.location.href='index.html';return;}
     currentProfile = await getUserProfile();

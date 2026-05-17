@@ -169,6 +169,7 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
         <div class="nav-label">Rosters</div>
         <a class="nav-item active" onclick="navTo('home')"><span class="ni-icon">🏠</span><span>Dashboard</span></a>
         <a class="nav-item" onclick="navTo('calendar')"><span class="ni-icon">📅</span><span>Year Calendar</span></a>
+        <a class="nav-item" onclick="navTo('cycles')"><span class="ni-icon">🔄</span><span>Year Cycles</span></a>
       </div>
       <div class="nav-group">
         <div class="nav-label">Info</div>
@@ -198,6 +199,7 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
     <div class="main-content">
       <div id="page-home" class="page active"></div>
       <div id="page-calendar" class="page"></div>
+      <div id="page-cycles" class="page"></div>
       <div id="page-leadership" class="page"></div>
       <div id="page-guide" class="page"></div>
       <div id="page-docs" class="page"></div>
@@ -349,7 +351,7 @@ async function checkAuthAndRoute(){
   // Load saved leadership contacts
   await loadLeadershipContacts();
   renderHome();
-  renderCalendar();
+  renderCalendar();renderCycles();
   renderLeadership();
   renderGuide();
   renderDocs();renderFeedback();
@@ -429,14 +431,21 @@ function renderHome(){
 }
 
 function renderCalendar(){
+  let h='<div class="page-title">📅 Year Calendar 2026</div><div class="page-sub">Auckland Ismaili Volunteers Duty Calendar</div>';
+  h+='<div style="display:flex;gap:10px;margin-bottom:16px;"><a href="2026-Calendar-Auckland.pdf" target="_blank" style="background:var(--ds2);border:1px solid var(--db);border-radius:8px;padding:8px 16px;font-size:11px;color:var(--blue-lt);text-decoration:none;font-weight:600;">👁 View Full Screen</a><a href="2026-Calendar-Auckland.pdf" download style="background:var(--ds2);border:1px solid var(--db);border-radius:8px;padding:8px 16px;font-size:11px;color:var(--green);text-decoration:none;font-weight:600;">⬇ Download PDF</a></div>';
+  h+='<div style="background:var(--ds);border:1px solid var(--db);border-radius:10px;overflow:hidden;"><iframe src="2026-Calendar-Auckland.pdf" style="width:100%;height:600px;border:none;"></iframe></div>';
+  document.getElementById('page-calendar').innerHTML=h;
+}
+function renderCycles(){
   const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  let h='<div class="page-title">📅 Year Calendar 2026</div><div class="page-sub">All duty cycles for Team A and Team B</div>';
-  h+='<div style="display:flex;gap:10px;margin-bottom:16px;"><a href="2026-Calendar-Auckland.pdf" target="_blank" style="background:var(--ds2);border:1px solid var(--db);border-radius:8px;padding:8px 16px;font-size:11px;color:var(--blue-lt);text-decoration:none;font-weight:600;">👁 View PDF Calendar</a><a href="2026-Calendar-Auckland.pdf" download style="background:var(--ds2);border:1px solid var(--db);border-radius:8px;padding:8px 16px;font-size:11px;color:var(--green);text-decoration:none;font-weight:600;">⬇ Download PDF</a></div>';
-  h+='<div style="background:var(--ds);border:1px solid var(--db);border-radius:10px;overflow:hidden;margin-bottom:20px;"><iframe src="2026-Calendar-Auckland.pdf" style="width:100%;height:400px;border:none;"></iframe></div>';
+  const islamicMonths=['Rajab/Sha\'ban','Sha\'ban/Ramadan','Ramadan/Shawwal','Shawwal/Dhu al-Qa\'da','Dhu al-Qa\'da/Dhu al-Hijja','Dhu al-Hijja/Muharram','Muharram/Safar','Safar/Rabi al-Awwal','Rabi al-Awwal/Rabi al-Akhir','Rabi al-Akhir/Jamada al-Ula','Jamada al-Ula/Jumada al-Akhira','Jumada al-Akhira/Rajab'];
+  let h='<div class="page-title">🔄 Year Cycles 2026</div><div class="page-sub">All 12 duty cycles with team assignments and Islamic months</div>';
   CYCLES.forEach((c,i)=>{
     const badge=c.team==='A'?'badge-a':'badge-b';
+    const islamic=islamicMonths[i]||'';
     h+=`<div class="cycle-group"><div class="cycle-header" onclick="this.nextElementSibling.classList.toggle('open')">
-      <span class="cycle-label">Cycle ${i+1}: ${c.label} <span class="team-badge ${badge}">Team ${c.team}</span></span>
+      <div style="flex:1;"><span class="cycle-label">Cycle ${i+1}: ${c.label}</span><div style="font-size:10px;color:var(--dm);margin-top:2px;">${islamic}</div></div>
+      <span class="team-badge ${badge}" style="margin-right:10px;">Team ${c.team}</span>
       <span class="cycle-meta">${c.events.length} events</span>
     </div><div class="cycle-body"><table><thead><tr><th>Date</th><th>Day</th><th>Event</th></tr></thead><tbody>`;
     c.events.forEach(ev=>{
@@ -444,7 +453,7 @@ function renderCalendar(){
     });
     h+=`</tbody></table></div></div>`;
   });
-  document.getElementById('page-calendar').innerHTML=h;
+  document.getElementById('page-cycles').innerHTML=h;
 }
 
 function renderLeadership(){
