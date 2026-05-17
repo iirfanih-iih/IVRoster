@@ -845,11 +845,11 @@ function renderEventList(){
     const cycleStart=startOfDay(new Date(first.dateRaw));
     const cycleEnd=startOfDay(new Date(last.dateRaw));
     let prefix='Historic';
-    if(cycleStart<=today&&cycleEnd>=today) prefix='Current';
+    if(cycleStart<=today&&cycleEnd>=today) prefix='Current Active';
     else if(cycleStart>today) prefix='Upcoming';
     const label=`${prefix} Cycle (${new Date(first.dateRaw).toLocaleDateString('en-US',{month:'short'})}–${new Date(last.dateRaw).toLocaleDateString('en-US',{month:'short',year:'numeric'})})`;
-    const isCurrent=currentPeriod?cycle.some(e=>getEventPeriodKey(e)===currentPeriod):prefix==='Current';
-    renderGroup(label,cycle,isCurrent);
+    const expandThis=prefix==='Current Active';
+    renderGroup(label,cycle,expandThis);
   });
 }
 
