@@ -158,6 +158,7 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
       <div class="nav-group">
         <div class="nav-label">Info</div>
         <a class="nav-item" onclick="navTo('leadership')"><span class="ni-icon">👥</span><span>Leadership</span></a>
+        <a class="nav-item" onclick="navTo('guide')"><span class="ni-icon">📑</span><span>Duty Guide</span></a>
         <a class="nav-item" onclick="navTo('docs')"><span class="ni-icon">📖</span><span>Documentation</span></a>
       </div>
       <div class="nav-group" id="adminNav" style="display:none;">
@@ -173,6 +174,7 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
       <div id="page-home" class="page active"></div>
       <div id="page-calendar" class="page"></div>
       <div id="page-leadership" class="page"></div>
+      <div id="page-guide" class="page"></div>
       <div id="page-docs" class="page"></div>
     </div>
   </div>
@@ -239,6 +241,7 @@ async function checkAuthAndRoute(){
   renderHome();
   renderCalendar();
   renderLeadership();
+  renderGuide();
   renderDocs();
 }
 
@@ -285,6 +288,92 @@ function renderLeadership(){
     h+=`<div class="contact-card"><span class="cc-role">${c.role}</span><span class="cc-name">${c.name||'—'}</span><span class="cc-phone">${c.phone}</span>${c.email?'<span class="cc-email">'+c.email+'</span>':''}${c.addr?'<span class="cc-addr">'+c.addr+'</span>':''}</div>`;
   });
   document.getElementById('page-leadership').innerHTML=h;
+}
+
+function renderGuide(){
+  document.getElementById('page-guide').innerHTML=`
+    <div class="page-title">📑 Duty Guidelines & FAQs</div>
+    <div class="page-sub">Essential information for all IV volunteers</div>
+
+    <div class="doc-section">
+      <h3>⏰ Punctuality & Preparation</h3>
+      <ul>
+        <li>If you are assigned <strong>Number 1, Nandi Labelling, Chai Station, Entrance, or Seating & Discipline</strong>, please arrive at least <strong>15–20 minutes before Dua time</strong>.</li>
+        <li>Team Leads will check in with assigned volunteers beforehand to confirm availability. Please respond promptly.</li>
+        <li><strong>Number 1</strong> volunteers are requested to be seated in front of Mukhi Saheb at least 15 minutes prior to Dua. Please stop Dua Karavi 5–7 minutes before the scheduled Dua time.</li>
+      </ul>
+    </div>
+
+    <div class="doc-section">
+      <h3>🚪 Entrance & Door Duty</h3>
+      <ul>
+        <li>Greet every person entering with a warm smile and <strong>"Ya Ali Madad"</strong>.</li>
+        <li>Do not hold the door open for extended periods — close it promptly to prevent outside noise from entering the Prayer Hall.</li>
+        <li>Maintain a welcoming but attentive presence at all times.</li>
+      </ul>
+    </div>
+
+    <div class="doc-section">
+      <h3>🔔 Nandi Duty (Chandraat & Khushiyali)</h3>
+      <ul>
+        <li>During Chandraat and Khushiyali events, the Nandi person must be <strong>clearly audible</strong> to the entire congregation.</li>
+        <li>Practice your delivery beforehand if needed. Speak with confidence and clarity.</li>
+      </ul>
+    </div>
+
+    <div class="doc-section">
+      <h3>👔 Uniform Policy</h3>
+      <ul>
+        <li>All volunteers are requested to wear their <strong>uniform throughout the entire month</strong> of their duty cycle, regardless of whether they have a specific duty assigned on that day.</li>
+        <li><strong>Chandraat & Khushiyali events</strong>: Formal uniform required.</li>
+        <li><strong>All other events</strong> (Friday, Baithulkhayal, Paanch Baar Saal, Student Mijalis): Casual uniform.</li>
+        <li>Uniformed volunteers are always preferred for duty assignments.</li>
+      </ul>
+    </div>
+
+    <div class="doc-section">
+      <h3>⚖️ Fairness & Multiple Duties</h3>
+      <ul>
+        <li>If you hold any other <strong>Waro (responsibility)</strong> at Jamat Khana, please inform your Team Lead so duties can be assigned fairly.</li>
+        <li>This ensures no single person is overburdened with multiple responsibilities on the same day.</li>
+        <li>The roster algorithm already prioritises fairness — but your input helps us fine-tune it.</li>
+      </ul>
+    </div>
+
+    <div class="doc-section">
+      <h3>🙏 Duty Etiquette</h3>
+      <ul>
+        <li>Perform your duty with <strong>sincerity, humility, and a spirit of service (Khidmat)</strong>.</li>
+        <li>Be courteous and respectful to all Jamat members, especially elders and children.</li>
+        <li>If you notice something that needs attention (spill, safety concern, etc.), take initiative or inform a Team Lead immediately.</li>
+        <li>Mobile phones should be on <strong>silent</strong> during duty hours.</li>
+      </ul>
+    </div>
+
+    <div class="doc-section">
+      <h3>❓ Frequently Asked Questions</h3>
+      <table>
+        <thead><tr><th>Question</th><th>Answer</th></tr></thead>
+        <tbody>
+          <tr><td>What should I do if I can’t make it on time?</td><td>Inform your Team Lead as early as possible so a substitute can be arranged.</td></tr>
+          <tr><td>What if I can’t come for my assigned duty?</td><td>Notify your Team Lead immediately. They will find a replacement.</td></tr>
+          <tr><td>What if I don’t have a uniform?</td><td>Discuss with your Team Lead. Uniformed volunteers are preferred, but arrangements can be made.</td></tr>
+          <tr><td>What if the duty assigned to me is something I cannot do?</td><td>Speak with your Team Lead. They can reassign or swap duties based on your situation.</td></tr>
+          <tr><td>Can I swap duties with another volunteer?</td><td>Yes, but only with Team Lead approval. Do not swap informally without notifying them.</td></tr>
+          <tr><td>What if I have a medical condition that affects my duty?</td><td>Inform your Team Lead confidentially. Duties will be adjusted accordingly.</td></tr>
+          <tr><td>How are duties assigned?</td><td>An automated fairness algorithm assigns duties based on: fewest total duties → hasn’t done this duty recently → random tiebreak. Team Leads can also make manual adjustments.</td></tr>
+          <tr><td>Why was I assigned the same duty again?</td><td>Some duties (Nandi Line, Nandi Passing) are repeatable. Major duties rotate fairly across the cycle.</td></tr>
+          <tr><td>Who do I contact for questions?</td><td>Your assigned Team Lead (see Leadership & Contacts page).</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="doc-section">
+      <h3>📞 Key Contacts</h3>
+      <p>For any duty-related questions, uniform issues, or scheduling conflicts, contact your Team Lead directly. See the <strong>Leadership & Contacts</strong> page for phone numbers.</p>
+      <p style="margin-top:8px;"><strong>Emergency situations</strong> (safety, medical): Contact the Safety Lead or call 111 immediately.</p>
+    </div>
+  `;
 }
 
 function renderDocs(){
