@@ -115,10 +115,20 @@ thead{position:sticky;top:0;z-index:1;}
 .sub-row{display:flex;gap:8px;align-items:center;margin-bottom:9px;}
 .sub-row label{font-size:.76rem;color:var(--text-light);min-width:80px;}
 .sub-row select{flex:1;background:white;border:1px solid var(--border-color);border-radius:6px;padding:7px 9px;font-size:.8rem;font-family:'DM Sans',sans-serif;color:var(--text-main);outline:none;}
-@media(max-width:768px){.app{flex-direction:column;}.sidebar{width:100%;}.main{padding:14px;}.modal-grid{grid-template-columns:1fr;}}
+@media(max-width:768px){.app{flex-direction:column;}.sidebar{width:100%;max-height:50vh;overflow-y:auto;display:none;}.sidebar.mobile-open{display:flex;}.main{padding:14px;}.modal-grid{grid-template-columns:1fr;}.mobile-toggle{display:block!important;}}
+.mobile-toggle{display:none;position:fixed;bottom:16px;right:16px;z-index:100;background:var(--primary);color:#fff;border:none;border-radius:50%;width:48px;height:48px;font-size:1.3rem;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);}
 @media print{.sidebar,.btn-row,.btn-sub,.btn-add-event,.btn-gen-all,.btn-reset,.tabs,.modal-overlay{display:none!important;}.app{display:block;}.main{padding:0;}.roster-card{box-shadow:none;border:1px solid #ccc;}}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:10px 20px;border-radius:20px;font-size:.8rem;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;}
 .toast.show{opacity:1;}
+.sync-banner{position:fixed;top:0;left:0;right:0;padding:6px 16px;font-size:.75rem;text-align:center;z-index:300;transition:transform .3s;transform:translateY(-100%);}
+.sync-banner.show{transform:translateY(0);}
+.sync-banner.syncing{background:#1565C0;color:#fff;}
+.sync-banner.error{background:#c0392b;color:#fff;}
+.sync-banner.ok{background:#2d7a3a;color:#fff;}
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.8);z-index:250;display:none;align-items:center;justify-content:center;}
+.loading-overlay.show{display:flex;}
+.spinner{width:32px;height:32px;border:3px solid var(--border-color);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 .view-only .btn-sub,.view-only .btn-add-event,.view-only .btn-reset,.view-only .btn-save,.view-only .btn-confirm,.view-only #addEventBtn{display:none!important;}
 .view-only .btn-generate[onclick*="generate"],.view-only .btn-generate[onclick*="unconfirm"]{display:none!important;}
 .historic-icon {
@@ -136,6 +146,7 @@ thead{position:sticky;top:0;z-index:1;}
   <img src="iv-logo.png" alt="IV Logo">
   <div><h1>IV Team B - Roster Generator</h1><p>Automated duty assignment · Alternate month cycle</p></div>
 </header>
+<button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open')">☰</button>
 <div class="app">
   <div class="sidebar">
     <div><div class="sidebar-title">Events</div><p style="font-size:.69rem;color:var(--text-light);margin-top:3px;">Select an event to view or generate</p></div>
@@ -175,6 +186,8 @@ thead{position:sticky;top:0;z-index:1;}
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="sync-banner" id="syncBanner"></div>
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
 <script>
 // ══════════════════════════════════════
 // AUTH & PERMISSIONS
@@ -425,17 +438,36 @@ async function init() {
 
   checkAuth().then(async ()=>{
     if(!_supabase || SUPABASE_URL.includes('YOUR_PROJECT')) return;
-    const loaded = await loadState();
-    if(loaded){
-      recalculateCountsFromState();
-      await loadMemberState();
-      updateMemberSummary();
-      renderEventList();
-      renderMainForEvent(selectedEventIdx);
+    showSyncBanner('syncing','Syncing with server...');
+    try{
+      const loaded = await loadState();
+      if(loaded){
+        recalculateCountsFromState();
+        await loadMemberState();
+        updateMemberSummary();
+        renderEventList();
+        renderMainForEvent(selectedEventIdx);
+      }
+      await saveState();
+      showSyncBanner('ok','Synced ✓');
+      setTimeout(()=>hideSyncBanner(),2000);
+    }catch(e){
+      showSyncBanner('error','Sync failed — working offline');
+      setTimeout(()=>hideSyncBanner(),5000);
     }
-    await saveState();
-  }).catch(()=>{});
+  }).catch(()=>{
+    showSyncBanner('error','Not connected — working offline');
+    setTimeout(()=>hideSyncBanner(),4000);
+  });
+
+  let inactivityTimer;
+  function resetInactivity(){clearTimeout(inactivityTimer);inactivityTimer=setTimeout(()=>{if(_supabase)signOut();},2*60*60*1000);}
+  ['click','keydown','scroll','touchstart'].forEach(e=>document.addEventListener(e,resetInactivity));
+  resetInactivity();
 }
+
+function showSyncBanner(type,msg){const b=document.getElementById('syncBanner');b.textContent=msg;b.className='sync-banner '+type+' show';}
+function hideSyncBanner(){document.getElementById('syncBanner').classList.remove('show');}
 function resetCounts(){dutyCounts={};prevAssign={};[...MEMBERS.male,...MEMBERS.female].forEach(m=>dutyCounts[m.name]=0);}
 function recalculateCountsFromState() {
   resetCounts();

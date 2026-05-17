@@ -351,6 +351,10 @@ function renderSettings(){
     <p style="font-size:.78rem;color:var(--text2);margin-bottom:12px;">Supabase project: <code>${SUPABASE_URL}</code></p>
     <button class="btn btn-outline" onclick="testConnection()">Test Connection</button>
     <span id="connStatus" style="margin-left:12px;font-size:.78rem;"></span>
+  </div>
+  <div class="card"><div class="card-title">Backup & Export</div>
+    <p style="font-size:.78rem;color:var(--text2);margin-bottom:12px;">Download all roster data as JSON for disaster recovery.</p>
+    <button class="btn btn-primary" onclick="exportAllData()">Download Full Backup</button>
   </div>`;
   document.getElementById('settingsPanel').innerHTML=h;
 }
@@ -375,6 +379,26 @@ function toast(msg,type='ok'){
   void t.offsetWidth;t.classList.add('show');
   if(_toastTimer)clearTimeout(_toastTimer);
   _toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+async function exportAllData(){
+  if(!_supabase){toast('Not connected','err');return;}
+  try{
+    const[r,o,p,s]=await Promise.all([
+      _supabase.from('rosters').select('*'),
+      _supabase.from('manual_overrides').select('*'),
+      _supabase.from('profiles').select('*'),
+      _supabase.from('app_settings').select('*'),
+    ]);
+    const backup={exported:new Date().toISOString(),rosters:r.data,overrides:o.data,profiles:p.data,settings:s.data};
+    const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+    const link=document.createElement('a');
+    link.href=URL.createObjectURL(blob);
+    link.download='iv-roster-backup-'+new Date().toISOString().slice(0,10)+'.json';
+    link.click();
+    toast('✓ Backup downloaded');
+    await logAudit('Full backup exported','settings','');
+  }catch(e){toast('Export failed: '+e.message,'err');}
 }
 
 init();

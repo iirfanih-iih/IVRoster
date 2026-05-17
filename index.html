@@ -8,6 +8,7 @@
 <meta property="og:description" content="Ismaili Volunteers Roster Generator">
 <meta property="og:type" content="website">
 <link rel="icon" type="image/png" href="iv-logo.png">
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&family=Barlow:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
@@ -269,7 +270,7 @@ function renderHome(){
 
 function renderCalendar(){
   const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  let h='<div class="page-title">📅 Year Calendar 2026</div><div class="page-sub">All duty cycles for Team A and Team B</div>';
+  let h='<div class="page-title">📅 Year Calendar 2026</div><div class="page-sub">All duty cycles for Team A and Team B · <a href="2026-Calendar-Auckland.pdf" target="_blank" style="color:var(--blue-lt);">Download PDF ↓</a></div>';
   CYCLES.forEach((c,i)=>{
     const badge=c.team==='A'?'badge-a':'badge-b';
     h+=`<div class="cycle-group"><div class="cycle-header" onclick="this.nextElementSibling.classList.toggle('open')">
