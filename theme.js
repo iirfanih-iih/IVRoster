@@ -24,8 +24,13 @@
     const next = current === 'dark' ? 'light' : current === 'light' ? 'system' : 'dark';
     setTheme(next);
   }
-  // Apply on load (before DOM ready to prevent flash)
+  // Apply on load
   applyTheme(getStoredTheme());
+  // Update button icon on DOM ready
+  document.addEventListener('DOMContentLoaded',function(){
+    const btn=document.getElementById('themeToggle');
+    if(btn) btn.textContent={dark:'🌙',light:'☀️',system:'💻'}[getStoredTheme()]||'💻';
+  });
   // Expose globally
   window.cycleTheme = cycleTheme;
   window.setTheme = setTheme;

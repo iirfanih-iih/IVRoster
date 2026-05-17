@@ -357,12 +357,18 @@ async function checkAuthAndRoute(){
   renderDocs();renderFeedback();
 }
 
-function navTo(page){
+function navTo(page, pushState){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+page).classList.add('active');
-  event.target.closest('.nav-item').classList.add('active');
+  const navEl=document.querySelector('.nav-item[onclick*="'+page+'"]');
+  if(navEl)navEl.classList.add('active');
+  if(pushState!==false) history.pushState({page},'','#'+page);
 }
+window.addEventListener('popstate',function(e){
+  const page=(e.state&&e.state.page)||'home';
+  navTo(page,false);
+});
 
 async function loadLeadershipContacts(){
   // Try Supabase first
