@@ -215,9 +215,9 @@ async function addUser(){
 async function editUser(id){
   const user=allUsers.find(u=>u.id===id);
   if(!user)return;
-  const newRole=prompt('New role for '+user.name+'?\n(admin / team_leader / viewer)',user.role);
+  const newRole=await ivPrompt('New role for '+user.name+'?\n(admin / team_leader / viewer)',user.role);
   if(!newRole||!['admin','team_leader','viewer'].includes(newRole))return;
-  const newTeam=newRole==='admin'?null:prompt('Team? (A / B)',user.team||'A');
+  const newTeam=newRole==='admin'?null:await ivPrompt('Team? (A / B)',user.team||'A');
 
   try{
     await _supabase.from('profiles').update({role:newRole,team:newTeam||null}).eq('id',id);
@@ -231,7 +231,7 @@ async function editUser(id){
 async function resetPassword(email){
   const user=allUsers.find(u=>u.email===email);
   if(!user){toast('User not found','err');return;}
-  const newPass=prompt('Set new password for '+email+':');
+  const newPass=await ivPrompt('Set new password for '+email+':');
   if(!newPass)return;
   if(newPass.length<6){toast('Password must be at least 6 characters','err');return;}
   try{

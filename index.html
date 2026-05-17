@@ -278,9 +278,9 @@ async function doPasswordReset(){
   }catch(e){err.textContent='Failed: '+(e.message||e);}
 }
 async function selfChangePassword(){
-  const current=prompt('Enter your current password:');
+  const current=await ivPrompt('Enter your current password:');
   if(!current)return;
-  const newPw=prompt('Enter new password:\n\nRequirements:\n- 8+ characters\n- 1 uppercase\n- 1 number\n- 1 special character');
+  const newPw=await ivPrompt('Enter new password:\n\nRequirements:\n- 8+ characters\n- 1 uppercase\n- 1 number\n- 1 special character');
   if(!newPw)return;
   const errors=validatePassword(newPw);
   if(errors.length){alert('Password does not meet requirements:\n- '+errors.join('\n- '));return;}
@@ -661,7 +661,7 @@ async function submitFeedback(){
   auditLog('Feedback submitted','feedback',type+': '+text.slice(0,50));
 }
 async function replyToFeedback(pid){
-  var text=prompt('Your reply:');if(!text||!text.trim())return;
+  var text=await ivPrompt('Your reply:');if(!text||!text.trim())return;
   var reply={user:window._currentUserName||'Anonymous',text:text.trim(),ts:new Date().toISOString()};
   var post=feedbackPosts.find(function(p){return p.id==pid;});if(!post)return;
   if(!post.replies)post.replies=[];post.replies.push(reply);

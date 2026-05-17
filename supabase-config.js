@@ -274,7 +274,7 @@ async function checkForcePasswordChange() {
     if (!session) return;
     const { data } = await _supabase.from('app_settings').select('value').eq('key', 'force_pw_change_' + session.user.id).maybeSingle();
     if (data && data.value === 'true') {
-      const newPw = prompt('You are required to change your password.\n\nRequirements:\n- At least 8 characters\n- 1 uppercase letter\n- 1 number\n- 1 special character (!@#$%^&*)\n\nEnter new password:');
+      const newPw = await ivPrompt('You are required to change your password.\n\nRequirements:\n- At least 8 characters\n- 1 uppercase letter\n- 1 number\n- 1 special character (!@#$%^&*)\n\nEnter new password:');
       if (!newPw) { await signOut(); return; }
       const errors = validatePassword(newPw);
       if (errors.length) { alert('Password does not meet requirements:\n- ' + errors.join('\n- ')); await signOut(); return; }
@@ -287,3 +287,61 @@ async function checkForcePasswordChange() {
     }
   } catch(e) { console.warn('Force PW check failed:', e); }
 }
+
+
+// ══════════════════════════════════════
+// CUSTOM PROMPT (replaces browser prompt)
+// Shows "IV Roster" instead of domain name
+// ══════════════════════════════════════
+function ivPrompt(message, defaultVal) {
+  return new Promise(resolve => {
+    let overlay = document.getElementById('ivPromptOverlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'ivPromptOverlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;';
+      overlay.innerHTML = '<div style="background:#071628;border:1px solid rgba(79,195,247,0.18);border-radius:14px;padding:28px;width:400px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.5);"><div style="font-family:Barlow,sans-serif;font-size:14px;font-weight:800;color:#4FC3F7;margin-bottom:14px;">IV Roster</div><div id="ivPromptMsg" style="font-size:12px;color:#E8F4FD;line-height:1.6;margin-bottom:14px;white-space:pre-wrap;"></div><input id="ivPromptInput" type="text" style="width:100%;background:#0D2040;border:1px solid rgba(79,195,247,0.18);border-radius:8px;padding:10px 14px;color:#E8F4FD;font-size:13px;font-family:Lexend,sans-serif;outline:none;margin-bottom:14px;"><div style="display:flex;gap:8px;justify-content:flex-end;"><button id="ivPromptCancel" style="background:none;border:1px solid rgba(79,195,247,0.18);border-radius:8px;padding:8px 16px;font-size:12px;color:#7AAECB;cursor:pointer;font-family:Lexend,sans-serif;">Cancel</button><button id="ivPromptOk" style="background:linear-gradient(135deg,#0C2461,#1976D2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lexend,sans-serif;">OK</button></div></div>';
+      document.body.appendChild(overlay);
+    }
+    document.getElementById('ivPromptMsg').textContent = message;
+    const input = document.getElementById('ivPromptInput');
+    input.value = defaultVal || '';
+    input.type = message.toLowerCase().includes('password') ? 'password' : 'text';
+    overlay.style.display = 'flex';
+    input.focus();
+    const cleanup = (val) => { overlay.style.display = 'none'; resolve(val); };
+    document.getElementById('ivPromptOk').onclick = () => cleanup(input.value);
+    document.getElementById('ivPromptCancel').onclick = () => cleanup(null);
+    input.onkeydown = (e) => { if (e.key === 'Enter') cleanup(input.value); if (e.key === 'Escape') cleanup(null); };
+  });
+}
+// Override native prompt
+window._nativePrompt = window.prompt;
+window.prompt = function(msg, def) {
+  // For sync contexts that can't await, fall back to native
+  // But most of our code is async so ivPrompt is preferred
+  return window._nativePrompt(msg, def);
+};
+
+
+// Custom alert (shows "IV Roster" instead of domain)
+function ivAlert(message) {
+  return new Promise(resolve => {
+    let overlay = document.getElementById('ivAlertOverlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'ivAlertOverlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;';
+      overlay.innerHTML = '<div style="background:#071628;border:1px solid rgba(79,195,247,0.18);border-radius:14px;padding:28px;width:400px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.5);"><div style="font-family:Barlow,sans-serif;font-size:14px;font-weight:800;color:#4FC3F7;margin-bottom:14px;">IV Roster</div><div id="ivAlertMsg" style="font-size:12px;color:#E8F4FD;line-height:1.6;margin-bottom:18px;white-space:pre-wrap;"></div><div style="text-align:right;"><button id="ivAlertOk" style="background:linear-gradient(135deg,#0C2461,#1976D2);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lexend,sans-serif;">OK</button></div></div>';
+      document.body.appendChild(overlay);
+    }
+    document.getElementById('ivAlertMsg').textContent = message;
+    overlay.style.display = 'flex';
+    const btn = document.getElementById('ivAlertOk');
+    btn.focus();
+    btn.onclick = () => { overlay.style.display = 'none'; resolve(); };
+  });
+}
+// Override native alert
+window._nativeAlert = window.alert;
+window.alert = function(msg) { ivAlert(msg); };
