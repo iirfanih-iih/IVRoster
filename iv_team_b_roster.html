@@ -315,15 +315,15 @@ const CHILD_ALLOWED = new Set(['Prayer Hall Entrance','MPH Hall Entrance','Nandi
 
 // Nandi Line & Nandi Passing MUST be last — they absorb all remaining unassigned members.
 const DUTIES = {
-  friday:       ['Nandi Labelling','Number 1','Prayer Hall Entrance','Shoe Entrance','Seating & Discipline','Sukreet','Sukreet & Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Chai Station','Chai Station Pack-up','Nandi Line','Nandi Passing'],
-  chandraat:    ['Nandi Labelling','Number 1','Prayer Hall Entrance','Shoe Entrance','Seating & Discipline','Sukreet','Sukreet & Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Water Station','Chai Station','Chai Station Pack-up','Nandi Line','Nandi Passing'],
+  friday:       ['Nandi Labelling','Number 1','Prayer Hall Entrance','Shoe Entrance','Seating & Discipline','Sukreet','Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Chai Station','Chai Station Pack-up','Nandi Line','Nandi Passing'],
+  chandraat:    ['Nandi Labelling','Number 1','Prayer Hall Entrance','Shoe Entrance','Seating & Discipline','Sukreet','Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Water Station','Chai Station','Chai Station Pack-up','Nandi Line','Nandi Passing'],
   baithulkhayal:['Nandi Labelling','Number 1','Prayer Hall Entrance','Shoe Entrance','Seating & Discipline','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Nandi Line','Nandi Passing'],
-  paanch:       ['Nandi Labelling','Number 1','Shoe Entrance','Prayer Hall Entrance','Seating & Discipline','Sukreet','Sukreet & Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Nandi Line','Nandi Passing'],
-  student:      ['Nandi Labelling','Number 1','Shoe Entrance','Prayer Hall Entrance','Seating & Discipline','Sukreet','Sukreet & Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Nandi Line','Nandi Passing'],
-  eid:          ['Nandi Labelling','Number 1','Shoe Entrance','Prayer Hall Entrance','Seating & Discipline','Sukreet','Sukreet & Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Nandi Line','Nandi Passing'],
-  navroz:       ['Nandi Labelling','Number 1','Prayer Hall Entrance','Shoe Entrance','Seating & Discipline','Sukreet','Sukreet & Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Water Station','Nandi Line','Nandi Passing'],
+  paanch:       ['Nandi Labelling','Number 1','Shoe Entrance','Prayer Hall Entrance','Seating & Discipline','Sukreet','Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Nandi Line','Nandi Passing'],
+  student:      ['Nandi Labelling','Number 1','Shoe Entrance','Prayer Hall Entrance','Seating & Discipline','Sukreet','Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Nandi Line','Nandi Passing'],
+  eid:          ['Nandi Labelling','Number 1','Shoe Entrance','Prayer Hall Entrance','Seating & Discipline','Sukreet','Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Nandi Line','Nandi Passing'],
+  navroz:       ['Nandi Labelling','Number 1','Prayer Hall Entrance','Shoe Entrance','Seating & Discipline','Sukreet','Ghatpaat Closing','Safety Exit Door/Discipline','Nandi','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution','Water Station','Nandi Line','Nandi Passing'],
 };
-const YOUTH_DUTIES = ['MPH Hall Entrance','Seating & Discipline','Sukreet & Ghatpaat Closing'];
+const YOUTH_DUTIES = ['MPH Hall Entrance', 'Seating & Discipline', 'Sukreet'];
 
 // ══════════════════════════════════════
 
@@ -355,7 +355,7 @@ function isBeforeToday(dateStr){
 }
 function hasCongregation(ev){
   if(typeof ev.congregation==='boolean')return ev.congregation;
-  if(ev.type==='friday'||ev.type==='student')return true;
+  if(ev.type==='friday')return true;
   const notes=(ev.notes||'').toLowerCase();
   return notes.includes('congregation');
 }
@@ -399,7 +399,7 @@ const DUTY_ASSIGNMENT_CONFIG = {
   'Shoe Entrance': (type, members, pick) => ({ male: pick(members.mY.length ? members.mY : [...members.mY, ...members.mA], 1, 'Shoe Entrance'), female: pick(members.fY.length ? members.fY : [...members.fY, ...members.fA], 1, 'Shoe Entrance') }),
   'Seating & Discipline': (type, members, pick) => ({ male: [...pick(members.mA, 1, 'Seating & Discipline'), ...pick(members.mY, 1, 'Seating & Discipline')].filter(Boolean), female: [...pick(members.fA, 1, 'Seating & Discipline'), ...pick(members.fY, 1, 'Seating & Discipline')].filter(Boolean) }),
   'Sukreet': (type, members, pick) => ({ male: members.mY.length && Math.random() < 0.6 ? [...pick(members.mA, 1, 'Sukreet'), ...pick(members.mY, 1, 'Sukreet')].filter(Boolean) : pick(members.mA, 2, 'Sukreet'), female: members.fY.length && Math.random() < 0.6 ? [...pick(members.fA, 1, 'Sukreet'), ...pick(members.fY, 1, 'Sukreet')].filter(Boolean) : pick(members.fA, 2, 'Sukreet') }),
-  'Sukreet & Ghatpaat Closing': (type, members, pick) => ({ male: pick(members.mY.length ? members.mY : members.mA, 1, 'Sukreet & Ghatpaat Closing'), female: pick(members.fY.length ? members.fY : members.fA, 1, 'Sukreet & Ghatpaat Closing') }),
+  'Ghatpaat Closing': (type, members, pick) => ({ male: pick(members.mY.length ? members.mY : members.mA, 1, 'Ghatpaat Closing'), female: pick(members.fY.length ? members.fY : members.fA, 1, 'Ghatpaat Closing') }),
   'Safety Exit Door/Discipline': (type, members, pick) => ({ male: [], female: Math.random() < 0.5 && members.fY.length ? [...pick(members.fA, 1, 'Safety Exit Door/Discipline'), ...pick(members.fY, 1, 'Safety Exit Door/Discipline')].filter(Boolean) : pick(members.fA, 1, 'Safety Exit Door/Discipline') }),
   'Nandi': (type, members, pick) => { const c = Math.floor(Math.random() * 3); if (c === 0 && members.mN.length >= 2) return { male: pick(members.mN, 2, 'Nandi'), female: [] }; if (c === 1 && members.fN.length >= 2) return { male: [], female: pick(members.fN, 2, 'Nandi') }; return { male: pick(members.mN, 1, 'Nandi'), female: pick(members.fN, 1, 'Nandi') }; },
   'Nandi Set-up': (type, members, pick) => ({ male: pick([...members.mA, ...members.mY], 1, 'Nandi Set-up'), female: pick([...members.fA, ...members.fY], 1, 'Nandi Set-up') }),
@@ -508,7 +508,7 @@ function setupEvents(){
     {id:'c2e1',name:'Chandraat',type:'chandraat',dateRaw:'2026-02-17',notes:'Formal Uniform',congregation:true},
     {id:'c2e2',name:'Baithulkhayal',type:'baithulkhayal',dateRaw:'2026-02-21',notes:'Casual Uniform'},
     {id:'c2e3',name:'Paanch Baar Saal',type:'paanch',dateRaw:'2026-02-25',notes:'Casual Uniform'},
-    {id:'c2e4',name:'Student Mijalis',type:'student',dateRaw:'2026-02-28',notes:'Casual Uniform',congregation:true},
+    {id:'c2e4',name:'Student Mijalis',type:'student',dateRaw:'2026-02-28',notes:'Casual Uniform'},
     {id:'c2e5',name:'Imamat Day',type:'eid',dateRaw:'2026-03-04',notes:'Formal Uniform'},
   ];
   // Team B Cycle 4: Apr 17 – May 16 (Historical)
@@ -518,7 +518,7 @@ function setupEvents(){
     {id:'m3',name:'Friday Majlis',type:'friday',dateRaw:'2026-04-24',notes:'Casual Uniform'},
     {id:'m4',name:'Paanch Baar Saal',type:'paanch',dateRaw:'2026-04-25',notes:'Casual Uniform'},
     {id:'m5',name:'Friday Majlis',type:'friday',dateRaw:'2026-05-01',notes:'Casual Uniform'},
-    {id:'m6',name:'Student Mijalis',type:'student',dateRaw:'2026-05-02',notes:'Casual Uniform',congregation:true},
+    {id:'m6',name:'Student Mijalis',type:'student',dateRaw:'2026-05-02',notes:'Casual Uniform'},
     {id:'m7',name:'Friday Majlis',type:'friday',dateRaw:'2026-05-08',notes:'Casual Uniform'},
     {id:'m8',name:'Friday Majlis',type:'friday',dateRaw:'2026-05-15',notes:'Casual Uniform'},
   ];
@@ -529,7 +529,7 @@ function setupEvents(){
     {id:'e3',name:'Baithulkhayal',type:'baithulkhayal',dateRaw:'2026-06-20',notes:'Casual Uniform'},
     {id:'e4',name:'Paanch Baar Saal',type:'paanch',dateRaw:'2026-06-23',notes:'Casual Uniform'},
     {id:'e5',name:'Friday Majlis',type:'friday',dateRaw:'2026-06-26',notes:'Casual Uniform'},
-    {id:'e6',name:'Student Mijalis',type:'student',dateRaw:'2026-06-27',notes:'Casual Uniform',congregation:true},
+    {id:'e6',name:'Student Mijalis',type:'student',dateRaw:'2026-06-27',notes:'Casual Uniform'},
     {id:'e7',name:'Friday Majlis',type:'friday',dateRaw:'2026-07-03',notes:'Casual Uniform'},
     {id:'e8',name:'Friday Majlis',type:'friday',dateRaw:'2026-07-10',notes:'Casual Uniform'},
   ];
@@ -538,7 +538,7 @@ function setupEvents(){
     {id:'i1',name:'Chandraat',type:'chandraat',dateRaw:'2026-08-13',notes:'Formal Uniform'},
     {id:'i2',name:'Baithulkhayal',type:'baithulkhayal',dateRaw:'2026-08-15',notes:'Casual Uniform'},
     {id:'i3',name:'Paanch Baar Saal',type:'paanch',dateRaw:'2026-08-21',notes:'Casual Uniform'},
-    {id:'i4',name:'Student Mijalis',type:'student',dateRaw:'2026-08-22',notes:'Casual Uniform',congregation:true},
+    {id:'i4',name:'Student Mijalis',type:'student',dateRaw:'2026-08-22',notes:'Casual Uniform'},
     {id:'i5',name:'Milad al-Nabi',type:'eid',dateRaw:'2026-08-24',notes:'Formal Uniform'},
     {id:'i6',name:'Friday Majlis',type:'friday',dateRaw:'2026-08-28',notes:'Casual Uniform'},
     {id:'i7',name:'Friday Majlis',type:'friday',dateRaw:'2026-09-04',notes:'Casual Uniform'},
@@ -550,7 +550,7 @@ function setupEvents(){
     {id:'j3',name:'Baithulkhayal',type:'baithulkhayal',dateRaw:'2026-10-17',notes:'Casual Uniform'},
     {id:'j4',name:'Paanch Baar Saal',type:'paanch',dateRaw:'2026-10-19',notes:'Casual Uniform'},
     {id:'j5',name:'Friday Majlis',type:'friday',dateRaw:'2026-10-23',notes:'Casual Uniform'},
-    {id:'j6',name:'Student Mijalis',type:'student',dateRaw:'2026-10-24',notes:'Casual Uniform',congregation:true},
+    {id:'j6',name:'Student Mijalis',type:'student',dateRaw:'2026-10-24',notes:'Casual Uniform'},
     {id:'j7',name:'Friday Majlis',type:'friday',dateRaw:'2026-10-30',notes:'Casual Uniform'},
     {id:'j8',name:'Friday Majlis',type:'friday',dateRaw:'2026-11-06',notes:'Casual Uniform'},
   ];
@@ -561,7 +561,7 @@ function setupEvents(){
     {id:'k3',name:'Baithulkhayal',type:'baithulkhayal',dateRaw:'2026-12-12',notes:'Casual Uniform'},
     {id:'k4',name:'Paanch Baar Saal',type:'paanch',dateRaw:'2026-12-17',notes:'Casual Uniform'},
     {id:'k5',name:'Friday Majlis',type:'friday',dateRaw:'2026-12-18',notes:'Casual Uniform'},
-    {id:'k6',name:'Student Mijalis',type:'student',dateRaw:'2026-12-19',notes:'Casual Uniform',congregation:true},
+    {id:'k6',name:'Student Mijalis',type:'student',dateRaw:'2026-12-19',notes:'Casual Uniform'},
     {id:'k7',name:'Yawm-i Ali',type:'eid',dateRaw:'2026-12-21',notes:'Formal Uniform'},
     {id:'k8',name:'Friday Majlis',type:'friday',dateRaw:'2026-12-25',notes:'Casual Uniform'},
   ];
@@ -782,7 +782,7 @@ function _generateRosterLogic(ev) {
       let mN2 = [], fN2 = [];
       if (d === 'MPH Hall Entrance') { mN2 = pick(mC.length ? mC : mY, 1, d, true, true); fN2 = pick(fC.length ? fC : fY, 1, d, true, true); }
       else if (d === 'Seating & Discipline') { mN2 = pick(mY, 1, d, true, true); fN2 = pick(fY, 1, d, true, true); }
-      else if (d === 'Sukreet & Ghatpaat Closing') { mN2 = pick([...mY, ...mC.filter(m=>m.age>=8)], 2, d, true, true); fN2 = pick([...fY, ...fC.filter(m=>m.age>=8)], 2, d, true, true); }
+      else if (d === 'Sukreet') { mN2 = pick([...mY, ...mC.filter(m=>m.age>=8)], 2, d, true, true); fN2 = pick([...fY, ...fC.filter(m=>m.age>=8)], 2, d, true, true); }
       row(d, mN2, fN2, 'youth');
     }
   }
