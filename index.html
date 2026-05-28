@@ -231,7 +231,7 @@ let CONTACTS=[
   {role:'Council Member',name:'Salman Momin',phone:'+64 22 070 6786',email:'ssjinnah@gmail.com',group:'council'},
   {role:'Asst. CMC',name:'Sameer Hirani',phone:'+64 22 397 9442',email:'sameerhirani99@gmail.com',group:'council'},
   {role:'IVC Director',name:'Irfan Jalia',phone:'+64 22 571 3757',email:'jaliairfan@gmail.com',group:'council'},
-  {role:'IV Deputy Director',name:'Shahzad Saleem',phone:'+64 20 4057 2575',email:'',group:'council'},
+  {role:'IV Deputy Director',name:'Shahzad Saleem',phone:'+64 20 4057 2575',email:'shazad.saleem@anzin.org',group:'council'},
   {role:'IV Facilitator',name:'Muskaan Somjee',phone:'+64 20 4065 7515',email:'muskaansomjee@gmail.com',group:'council'},
   {role:'Team Lead',name:'Irfan Ismail',phone:'+64 27 258 6371',email:'iirfanih@gmail.com',group:'teamA'},
   {role:'Team Lead',name:'Karishma Dharani',phone:'+64 29 777 8786',email:'tabbudharani@gmail.com',group:'teamA'},
@@ -303,18 +303,90 @@ async function selfChangePassword(){
   }catch(e){alert('Failed: '+(e.message||e));}
 }
 
-async function forgotPassword(){
-  const email=document.getElementById('emailInput').value.trim();
-  if(!email){alert('Please enter your email address first, then click Forgot Password.');return;}
-  if(!_supabase){alert('Not connected to server.');return;}
-  if(isRateLimited('reset',3)){alert('Too many reset attempts. Please wait 1 minute.');return;}
-  try{
-    const{error}=await _supabase.auth.resetPasswordForEmail(email,{
-      redirectTo:window.location.origin+window.location.pathname
-    });
-    if(error)throw error;
-    alert('Password reset email sent to '+email+'. Check your inbox (and spam folder).');
-  }catch(e){alert('Failed: '+(e.message||e));}
+function forgotPassword(){
+  document.getElementById('passwordInput').parentElement.style.display = 'none';
+  const loginButton = document.getElementById('loginBtn');
+  loginButton.textContent = 'Send Reset Link';
+  const form = document.querySelector('.lbox form');
+  form.onsubmit = handleForgotPassword;
+
+  const forgotLink = document.querySelector('a[onclick="forgotPassword()"]');
+  if (forgotLink) {
+    forgotLink.parentElement.style.display = 'none';
+  }
+
+  let backLink = document.getElementById('backToLoginLinkContainer');
+  if (!backLink) {
+      backLink = document.createElement('div');
+      backLink.id = 'backToLoginLinkContainer';
+      backLink.style.textAlign = 'center';
+      backLink.style.marginTop = '12px';
+      backLink.innerHTML = `<a href="#" id="backToLoginLink" onclick="backToLogin(event)" style="font-size:11px;color:var(--dm);text-decoration:none;">Back to Sign In</a>`;
+      const lbox = document.querySelector('.lbox');
+      lbox.appendChild(backLink);
+  }
+  backLink.style.display = 'block';
+
+  document.querySelector('.llogo h1').textContent = 'Reset Password';
+  document.querySelector('.llogo p').textContent = 'Enter your email to receive a reset link.';
+  document.getElementById('errorMsg').textContent = '';
+}
+
+function backToLogin(event) {
+    if (event) event.preventDefault();
+    document.getElementById('passwordInput').parentElement.style.display = 'block';
+    const loginButton = document.getElementById('loginBtn');
+    loginButton.textContent = 'Sign In';
+    const form = document.querySelector('.lbox form');
+    form.onsubmit = handleLogin;
+    const forgotLink = document.querySelector('a[onclick="forgotPassword()"]');
+    if (forgotLink) {
+        forgotLink.parentElement.style.display = 'block';
+    }
+    const backLink = document.getElementById('backToLoginLinkContainer');
+    if(backLink) {
+        backLink.style.display = 'none';
+    }
+    document.querySelector('.llogo h1').textContent = 'IV Roster';
+    document.querySelector('.llogo p').textContent = 'Auckland Jamatkhana · Ismaili Volunteers';
+    document.getElementById('errorMsg').textContent = '';
+}
+
+async function handleForgotPassword(e) {
+    e.preventDefault();
+    const email = document.getElementById('emailInput').value.trim();
+    const err = document.getElementById('errorMsg');
+    const btn = document.getElementById('loginBtn');
+
+    if(!email){
+        err.textContent = 'Please enter your email address.';
+        return;
+    }
+    if(!_supabase){
+        err.textContent = 'Not connected to server.';
+        return;
+    }
+    if(isRateLimited('reset',3)){
+        err.textContent = 'Too many reset attempts. Please wait 1 minute.';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    err.textContent = '';
+    
+    try{
+        const{error}=await _supabase.auth.resetPasswordForEmail(email,{
+            redirectTo:window.location.origin+window.location.pathname
+        });
+        if(error) throw error;
+        alert('Password reset email sent to '+email+'. Check your inbox (and spam folder).');
+        backToLogin();
+    }catch(e){
+        err.textContent = 'Failed: '+(e.message||e);
+        btn.disabled = false;
+        btn.textContent = 'Send Reset Link';
+    }
 }
 
 async function handleLogin(e){
