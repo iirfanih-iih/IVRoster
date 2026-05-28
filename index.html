@@ -330,6 +330,11 @@ function forgotPassword(){
   document.querySelector('.llogo h1').textContent = 'Reset Password';
   document.querySelector('.llogo p').textContent = 'Enter your email to receive a reset link.';
   document.getElementById('errorMsg').textContent = '';
+
+  const emailInput = document.getElementById('emailInput');
+  emailInput.type = 'text';
+  emailInput.parentElement.querySelector('label').textContent = 'Username or Email';
+  emailInput.placeholder = 'Enter your username or email';
 }
 
 function backToLogin(event) {
@@ -350,6 +355,11 @@ function backToLogin(event) {
     document.querySelector('.llogo h1').textContent = 'IV Roster';
     document.querySelector('.llogo p').textContent = 'Auckland Jamatkhana · Ismaili Volunteers';
     document.getElementById('errorMsg').textContent = '';
+
+    const emailInput = document.getElementById('emailInput');
+    emailInput.type = 'email';
+    emailInput.parentElement.querySelector('label').textContent = 'Email';
+    emailInput.placeholder = 'your@email.com';
 }
 
 async function handleForgotPassword(e) {
