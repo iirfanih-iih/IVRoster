@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IV Team A – Roster Generator</title>
 <link rel="icon" type="image/png" href="iv-logo.png">
+<link rel="apple-touch-icon" href="iv-logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IV Team A Roster">
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&family=Barlow:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
@@ -163,6 +167,35 @@ thead{position:sticky;top:0;z-index:1;}
   margin-right: 4px;
   transform: translateY(-1px);
 }
+
+/* Accessibility: focus-visible */
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px;}
+input:focus-visible,select:focus-visible{outline-offset:0;}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important;}}
+
+/* Touch target minimums */
+.btn-sub{padding:6px 10px;min-height:36px;min-width:36px;font-size:.72rem;}
+.btn-add-event,.btn-reset{min-height:44px;display:flex;align-items:center;justify-content:center;}
+.event-item{min-height:48px;}
+.tab{min-height:44px;padding:10px 15px;}
+.btn-generate,.btn-gen-all,.btn-save{min-height:44px;}
+.modal-actions button{min-height:44px;padding:10px 18px;}
+
+/* Minimum font floor for readability */
+.event-badge,.nandi-tag,.youth-tag{font-size:max(.65rem,10px);}
+th{font-size:max(.7rem,10.5px);}
+.stat-label,.event-item-date{font-size:max(.7rem,10.5px);}
+.sidebar-title{font-size:max(.75rem,11px);}
+
+/* Table scroll hint */
+.roster-card{position:relative;}
+.roster-card::after{content:'';position:absolute;top:0;right:0;bottom:0;width:20px;background:linear-gradient(to right,transparent,var(--bg-alt));pointer-events:none;opacity:0;transition:opacity .3s;}
+@media(max-width:768px){.roster-card::after{opacity:1;}}
+
+/* Modal body scroll lock utility */
+body.modal-open{overflow:hidden;position:fixed;width:100%;}
 </style>
 </head>
 <body>
@@ -172,8 +205,8 @@ thead{position:sticky;top:0;z-index:1;}
   <div><h1>IV Team A - Roster Generator</h1><p>Automated duty assignment · Alternate month cycle</p></div>
   <button id="themeToggle" onclick="cycleTheme()" style="margin-left:auto;background:none;border:1px solid var(--border-color);border-radius:8px;padding:6px 10px;font-size:1rem;cursor:pointer;" title="Toggle theme">🌙</button>
 </header>
-<div class="sidebar-backdrop" onclick="closeSidebar()"></div>
-<button class="mobile-toggle" onclick="toggleSidebar()">☰ Events</button>
+<div class="sidebar-backdrop" role="button" aria-label="Close sidebar" onclick="closeSidebar()"></div>
+<button class="mobile-toggle" aria-label="Open events sidebar" onclick="toggleSidebar()">☰ Events</button>
 <div class="app">
   <div class="sidebar">
     <div><div class="sidebar-title">Events</div><p style="font-size:.69rem;color:var(--text-light);margin-top:3px;">Select an event to view or generate</p></div>
@@ -1810,7 +1843,7 @@ function openSubModal(evIdx,ri,gender,removeName){
     return true;
   });
   document.getElementById('subAddSelect').innerHTML=all.map(m=>`<option value="${m.name}">${m.name} (${getGroup(m)})</option>`).join('');
-  document.getElementById('subModal').classList.add('open');
+  document.getElementById('subModal').classList.add('open');document.body.classList.add('modal-open');
 }
 
 function confirmSubstitute(){
@@ -1843,8 +1876,8 @@ function confirmSubstitute(){
 // ══════════════════════════════════════
 // ADD EVENT / RESET
 // ══════════════════════════════════════
-function openAddEventModal(){document.getElementById('addEventModal').classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openAddEventModal(){document.getElementById('addEventModal').classList.add('open');document.body.classList.add('modal-open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');document.body.classList.remove('modal-open');}
 
 function addEvent(){
   const name=document.getElementById('newEventName').value.trim();
@@ -2139,7 +2172,7 @@ function exportCycleToExcel(){
 
 
 
-window.onclick=e=>{if(e.target.classList.contains('modal-overlay'))e.target.classList.remove('open');};
+window.onclick=e=>{if(e.target.classList.contains('modal-overlay')){e.target.classList.remove('open');document.body.classList.remove('modal-open');}};
 init();
 </script>
 </body>

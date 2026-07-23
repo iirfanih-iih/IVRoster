@@ -1,7 +1,9 @@
 {
   "name": "IV Roster - Auckland Jamatkhana",
   "short_name": "IV Roster",
+  "description": "Ismaili Volunteers Roster Generator for Auckland Jamatkhana",
   "start_url": "/IVRoster/",
+  "scope": "/IVRoster/",
   "display": "standalone",
   "background_color": "#020B18",
   "theme_color": "#0068b3",
@@ -9,7 +11,14 @@
     {
       "src": "iv-logo.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "iv-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

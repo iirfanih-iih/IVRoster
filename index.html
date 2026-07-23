@@ -8,6 +8,10 @@
 <meta property="og:description" content="Ismaili Volunteers Roster Generator">
 <meta property="og:type" content="website">
 <link rel="icon" type="image/png" href="iv-logo.png">
+<link rel="apple-touch-icon" href="iv-logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IV Roster">
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&family=Barlow:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -53,7 +57,7 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
 .lerr{color:#f88;font-size:12px;text-align:center;margin-top:10px;min-height:16px;}
 
 /* App Layout */
-#dashboard{display:none;height:100vh;}
+#dashboard{display:none;height:100vh;height:100dvh;}
 .app-layout{display:flex;height:100%;}
 .sidebar{width:220px;background:var(--ds);border-right:1px solid var(--db);display:flex;flex-direction:column;padding:16px 0;overflow-y:auto;}
 .sb-logo{text-align:center;padding:12px 16px 20px;border-bottom:1px solid var(--db);margin-bottom:12px;}
@@ -123,10 +127,25 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
 .doc-section th{background:var(--ds2);color:var(--dt);font-weight:700;}
 .doc-section td{color:var(--dm);}
 
-@media(max-width:768px){.app-layout{flex-direction:column;}.sidebar{width:82vw;max-width:300px;position:fixed;top:0;left:0;bottom:0;z-index:500;transform:translateX(-100%);transition:transform .25s ease;display:flex!important;padding-top:16px;}.sidebar.mobile-open{transform:translateX(0);}.sidebar-backdrop{display:block!important;}.main-content{padding:16px;}.cards{grid-template-columns:1fr!important;}.page-title{font-size:16px;}}
+@media(max-width:768px){.app-layout{flex-direction:column;}.sidebar{width:82vw;max-width:300px;position:fixed;top:0;left:0;bottom:0;z-index:500;transform:translateX(-100%);transition:transform .25s ease;display:flex!important;padding-top:16px;}.sidebar.mobile-open{transform:translateX(0);}.sidebar-backdrop{display:block!important;}.main-content{padding:16px 16px 80px;}.cards{grid-template-columns:1fr!important;}.page-title{font-size:16px;}}
 .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:499;}
-.mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:600;background:var(--ds);border:1px solid var(--db);color:var(--dt);border-radius:8px;width:40px;height:40px;font-size:1.2rem;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.4);}
+.mobile-toggle{display:none;position:fixed;bottom:16px;right:16px;z-index:600;background:var(--blue2);border:none;color:#fff;border-radius:24px;width:48px;height:48px;font-size:1.2rem;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.4);}
 @media(max-width:768px){.mobile-toggle{display:flex;align-items:center;justify-content:center;}.mobile-close{display:block!important;}}
+
+/* Accessibility: focus-visible */
+:focus-visible{outline:2px solid var(--blue-lt);outline-offset:2px;border-radius:4px;}
+input:focus-visible,select:focus-visible{outline-offset:0;}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important;}}
+
+/* Minimum font floor for readability */
+.card-access,.cycle-meta,.team-badge,.nav-label,.sb-logo p,.card-desc{font-size:max(0.7rem,11px);}
+
+/* Touch target minimums */
+.nav-item{min-height:44px;padding:10px 12px;}
+.btn-logout{min-height:44px;}
+.cycle-header{min-height:48px;}
 </style>
 </head>
 <body>
@@ -141,11 +160,11 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
     </div>
     <form onsubmit="handleLogin(event)">
       <div class="lfg">
-        <label>Email</label>
+        <label for="emailInput">Email</label>
         <input id="emailInput" type="email" placeholder="your@email.com" autocomplete="username" required>
       </div>
       <div class="lfg">
-        <label>Password</label>
+        <label for="passwordInput">Password</label>
         <input id="passwordInput" type="password" placeholder="••••••••" autocomplete="current-password" required>
       </div>
       <button type="submit" class="lbtn" id="loginBtn">Sign In</button>
@@ -161,11 +180,11 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
 
 <!-- Dashboard -->
 <div id="dashboard">
-  <div class="sidebar-backdrop" onclick="document.querySelector('.sidebar').classList.remove('mobile-open');this.style.display='none';"></div>
-  <button class="mobile-toggle" onclick="const s=document.querySelector('.sidebar'),b=document.querySelector('.sidebar-backdrop');s.classList.toggle('mobile-open');b.style.display=s.classList.contains('mobile-open')?'block':'none';">☰</button>
+  <div class="sidebar-backdrop" role="button" aria-label="Close navigation" onclick="document.querySelector('.sidebar').classList.remove('mobile-open');this.style.display='none';"></div>
+  <button class="mobile-toggle" aria-label="Open navigation menu" onclick="const s=document.querySelector('.sidebar'),b=document.querySelector('.sidebar-backdrop');s.classList.toggle('mobile-open');b.style.display=s.classList.contains('mobile-open')?'block':'none';">☰</button>
   <div class="app-layout">
     <div class="sidebar">
-      <button onclick="this.parentElement.classList.remove('mobile-open')" style="display:none;position:absolute;top:12px;right:12px;background:none;border:1px solid var(--db);color:var(--dt);border-radius:6px;width:32px;height:32px;font-size:1rem;cursor:pointer;" class="mobile-close">✕</button>
+      <button onclick="this.parentElement.classList.remove('mobile-open');document.querySelector('.sidebar-backdrop').style.display='none';" style="display:none;position:absolute;top:12px;right:12px;background:none;border:1px solid var(--db);color:var(--dt);border-radius:6px;width:44px;height:44px;font-size:1.2rem;cursor:pointer;" class="mobile-close" aria-label="Close navigation menu">✕</button>
       <div class="sb-logo">
         <img src="iv-logo.png" alt="IV" style="height:36px;margin-bottom:6px;">
         <h2>IV Roster</h2>
@@ -173,16 +192,16 @@ body{font-family:'Lexend',sans-serif;background:var(--dp);color:var(--dt);min-he
       </div>
       <div class="nav-group">
         <div class="nav-label">Rosters</div>
-        <a class="nav-item active" onclick="navTo('home')"><span class="ni-icon">🏠</span><span>Dashboard</span></a>
-        <a class="nav-item" onclick="navTo('calendar')"><span class="ni-icon">📅</span><span>Year Calendar</span></a>
-        <a class="nav-item" onclick="navTo('cycles')"><span class="ni-icon">🔄</span><span>Year Cycles</span></a>
+        <a class="nav-item active" role="button" tabindex="0" onclick="navTo('home')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navTo('home')}"><span class="ni-icon" aria-hidden="true">🏠</span><span>Dashboard</span></a>
+        <a class="nav-item" role="button" tabindex="0" onclick="navTo('calendar')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navTo('calendar')}"><span class="ni-icon" aria-hidden="true">📅</span><span>Year Calendar</span></a>
+        <a class="nav-item" role="button" tabindex="0" onclick="navTo('cycles')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navTo('cycles')}"><span class="ni-icon" aria-hidden="true">🔄</span><span>Year Cycles</span></a>
       </div>
       <div class="nav-group">
         <div class="nav-label">Info</div>
-        <a class="nav-item" onclick="navTo('leadership')"><span class="ni-icon">👥</span><span>Leadership & Contacts</span></a>
-        <a class="nav-item" onclick="navTo('guide')"><span class="ni-icon">📑</span><span>Duty Guide & FAQ</span></a>
-        <a class="nav-item" onclick="navTo('docs')"><span class="ni-icon">📖</span><span>Documentation</span></a>
-        <a class="nav-item" onclick="navTo('feedback')"><span class="ni-icon">💬</span><span>Feedback</span></a>
+        <a class="nav-item" role="button" tabindex="0" onclick="navTo('leadership')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navTo('leadership')}"><span class="ni-icon" aria-hidden="true">👥</span><span>Leadership & Contacts</span></a>
+        <a class="nav-item" role="button" tabindex="0" onclick="navTo('guide')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navTo('guide')}"><span class="ni-icon" aria-hidden="true">📑</span><span>Duty Guide & FAQ</span></a>
+        <a class="nav-item" role="button" tabindex="0" onclick="navTo('docs')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navTo('docs')}"><span class="ni-icon" aria-hidden="true">📖</span><span>Documentation</span></a>
+        <a class="nav-item" role="button" tabindex="0" onclick="navTo('feedback')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navTo('feedback')}"><span class="ni-icon" aria-hidden="true">💬</span><span>Feedback</span></a>
       </div>
       <div class="nav-group" id="adminNav" style="display:none;">
         <div class="nav-label">Admin</div>
@@ -570,9 +589,9 @@ function renderLeadership(){
       const idx=CONTACTS.indexOf(c);
       if(isAdmin){
         h+=`<tr class="leader-edit-row" style="display:none;"><td><input value="${c.role}" data-idx="${idx}" data-f="role" style="width:100%;background:var(--ds2);border:1px solid var(--db);border-radius:4px;padding:4px 6px;color:var(--dt);font-size:11px;"></td><td><input value="${c.name||''}" data-idx="${idx}" data-f="name" style="width:100%;background:var(--ds2);border:1px solid var(--db);border-radius:4px;padding:4px 6px;color:var(--dt);font-size:11px;"></td><td><input value="${c.phone||''}" data-idx="${idx}" data-f="phone" style="width:100%;background:var(--ds2);border:1px solid var(--db);border-radius:4px;padding:4px 6px;color:var(--dt);font-size:11px;"></td><td><input value="${c.email||''}" data-idx="${idx}" data-f="email" style="width:100%;background:var(--ds2);border:1px solid var(--db);border-radius:4px;padding:4px 6px;color:var(--dt);font-size:11px;"></td>${g.key==='emergency'?'<td><input value="'+(c.addr||'')+'" data-idx="'+idx+'" data-f="addr" style="width:100%;background:var(--ds2);border:1px solid var(--db);border-radius:4px;padding:4px 6px;color:var(--dt);font-size:11px;"></td>':''}</tr>`;
-        h+=`<tr class="leader-view-row"><td style="font-weight:600;color:var(--dt);">${c.role}</td><td>${c.name||'—'}</td><td style="font-family:monospace;color:var(--blue-lt);">${c.phone||'—'}</td><td style="color:var(--green);">${c.email||'—'}</td>${g.key==='emergency'&&c.addr?'<td style="color:var(--dm);">'+c.addr+'</td>':g.key==='emergency'?'<td>—</td>':''}</tr>`;
+        h+=`<tr class="leader-view-row"><td style="font-weight:600;color:var(--dt);">${c.role}</td><td>${c.name||'—'}</td><td style="font-family:monospace;color:var(--blue-lt);">${c.phone?'<a href="tel:'+c.phone.replace(/\s/g,'')+'" style="color:var(--blue-lt);text-decoration:none;">'+c.phone+'</a>':'—'}</td><td style="color:var(--green);">${c.email?'<a href="mailto:'+c.email+'" style="color:var(--green);text-decoration:none;">'+c.email+'</a>':'—'}</td>${g.key==='emergency'&&c.addr?'<td style="color:var(--dm);">'+c.addr+'</td>':g.key==='emergency'?'<td>—</td>':''}</tr>`;
       } else {
-        h+=`<tr><td style="font-weight:600;color:var(--dt);">${c.role}</td><td>${c.name||'—'}</td><td style="font-family:monospace;color:var(--blue-lt);">${c.phone||'—'}</td><td style="color:var(--green);">${c.email||'—'}</td>${g.key==='emergency'&&c.addr?'<td style="color:var(--dm);">'+c.addr+'</td>':g.key==='emergency'?'<td>—</td>':''}</tr>`;
+        h+=`<tr><td style="font-weight:600;color:var(--dt);">${c.role}</td><td>${c.name||'—'}</td><td style="font-family:monospace;color:var(--blue-lt);">${c.phone?'<a href="tel:'+c.phone.replace(/\s/g,'')+'" style="color:var(--blue-lt);text-decoration:none;">'+c.phone+'</a>':'—'}</td><td style="color:var(--green);">${c.email?'<a href="mailto:'+c.email+'" style="color:var(--green);text-decoration:none;">'+c.email+'</a>':'—'}</td>${g.key==='emergency'&&c.addr?'<td style="color:var(--dm);">'+c.addr+'</td>':g.key==='emergency'?'<td>—</td>':''}</tr>`;
       }
     });
     h+=`</tbody></table></div>`;
