@@ -1,0 +1,75 @@
+import { MembersData } from '../lib/roster-engine';
+
+export const TEAM_A_MEMBERS: MembersData = {
+  male: [
+    // Children (Under 12)
+    { name: 'Muiz Peerbhai', age: 6, nandi: false },
+    { name: 'Raaiq Hasnani', age: 7, nandi: false },
+    { name: 'Zaraan Naveed', age: 7, nandi: false },
+    { name: 'Shehran Harjee', age: 8, nandi: false },
+    { name: 'Inayat Lokhandwala', age: 9, nandi: false },
+    { name: 'Kabir Vaswani', age: 9, nandi: false },
+    { name: 'Aly Shan Noorani', age: 10, nandi: false },
+    { name: 'Ryan Nathani', age: 11, nandi: false },
+    { name: 'Aziz Punjwani', age: 10, nandi: false },
+    // Youth (12-17)
+    { name: 'Ilyaan Khetani', age: 12, nandi: false },
+    { name: 'Arshiyaan Charolia', age: 13, nandi: false },
+    { name: 'Arqish Lalani', age: 14, nandi: false },
+    { name: 'Aaryan Nathani', age: 15, nandi: false },
+    { name: 'Taraz Rupani', age: 15, nandi: false },
+    { name: 'Imran Mitha', age: 17, nandi: false },
+    { name: 'Rehaan Vazir', age: 17, nandi: false },
+    // Adults
+    { name: 'Amin Kotadia', age: 40, nandi: true },
+    { name: 'Sajid Momin', age: 43, nandi: true },
+    { name: 'Amirali Pirani', age: 45, nandi: true },
+    { name: 'Hussain Hasnani', age: 45, nandi: true },
+    { name: 'Moez Jivani', age: 46, nandi: true },
+    { name: 'Naeem Chagani', age: 47, nandi: true },
+    { name: 'Aziz Lokhandwala', age: 52, nandi: true },
+    { name: 'Akbar Bhimani', age: 63, nandi: false },
+    { name: 'Alazhar Malik', age: 40, nandi: false },
+    // Senior
+    { name: 'Kamruddin Parmar', age: 74, nandi: false },
+  ],
+  female: [
+    // Children (Under 12)
+    { name: 'Zenia Sohani', age: 7, nandi: false },
+    { name: 'Elys Lakhani', age: 7, nandi: false },
+    { name: 'Izna Manesia', age: 7, nandi: false },
+    { name: 'Aiza Lakhani', age: 10, nandi: false },
+    { name: 'Aryaah Charolia', age: 10, nandi: false },
+    { name: 'Misha Jelani', age: 10, nandi: false },
+    { name: 'Ayra Tharani', age: 10, nandi: false },
+    { name: 'Amal Lalani', age: 10, nandi: false },
+    // Youth (12-17)
+    { name: 'Nora Abbas', age: 12, nandi: false },
+    { name: 'Carys Lakhani', age: 12, nandi: false },
+    { name: 'Eliza Raheem', age: 13, nandi: false },
+    { name: 'Iqra Vaswani', age: 13, nandi: false },
+    { name: 'Mahnoor Khowaja', age: 13, nandi: false },
+    { name: 'Alayna Lalwani', age: 14, nandi: false },
+    { name: 'Areesha Peerbhoy', age: 17, nandi: false },
+    { name: 'Alia Peerbhai', age: 17, nandi: false },
+    { name: 'Mahreen Dossa', age: 15, nandi: false },
+    // Adults
+    { name: 'Rhea Lalani', age: 20, nandi: false },
+    { name: 'Sonam Panjwani', age: 36, nandi: true },
+    { name: 'Nilam Momin', age: 37, nandi: true },
+    { name: 'Noureen Rahim', age: 37, nandi: false },
+    { name: 'Asmita Prasla', age: 43, nandi: false },
+    { name: 'Munira Panjwani', age: 44, nandi: false },
+    { name: 'Nadya Jivani', age: 50, nandi: true },
+    { name: 'Farida Hudda', age: 55, nandi: true },
+    { name: 'Salimah Charania', age: 40, nandi: false },
+    { name: 'Sonal Mithani', age: 40, nandi: false },
+    { name: 'Monisha Harjee', age: 40, nandi: false },
+    { name: 'Rohina Ghulami', age: 35, nandi: false },
+    // Seniors
+    { name: 'Yasmin Charania', age: 72, nandi: false },
+    { name: 'Gulshan Somjee', age: 78, nandi: false },
+    { name: 'Zarina Lalani', age: 81, nandi: false },
+    { name: 'Raziya Vaswani', age: 75, nandi: false },
+  ],
+};

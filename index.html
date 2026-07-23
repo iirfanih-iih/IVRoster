@@ -613,7 +613,7 @@ async function saveLeadership(){
   });
   // Save to Supabase app_settings
   if(_supabase && !SUPABASE_URL.includes('YOUR_PROJECT')){
-    await _supabase.from('app_settings').upsert({key:'leadership_contacts',value:JSON.stringify(CONTACTS)},{onConflict:'key'});
+    await _supabase.from('app_settings').upsert({key:'leadership_contacts',value:JSON.stringify(CONTACTS)},{onConflict:'key'}).select();
   }
   localStorage.setItem('iv_leadership',JSON.stringify(CONTACTS));
   auditLog("Leadership contacts updated","settings","");toggleLeadershipEdit();

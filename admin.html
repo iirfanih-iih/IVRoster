@@ -223,7 +223,7 @@ async function addUser(){
 
     // Set force password change on first login
     if(forceChange && result.user_id){
-      await _supabase.from('app_settings').upsert({key:'force_pw_change_'+result.user_id,value:'true'},{onConflict:'key'});
+      await _supabase.from('app_settings').upsert({key:'force_pw_change_'+result.user_id,value:'true'},{onConflict:'key'}).select();
     }
 
     document.getElementById('newName').value='';

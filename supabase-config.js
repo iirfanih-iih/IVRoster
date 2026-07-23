@@ -106,13 +106,14 @@ async function dbSaveRoster(team, eventId, roster, confirmed) {
   pauseRealtime(2000);
   setSyncStatus('saving');
   const session = await getSession();
-  const { error } = await _supabase.from('rosters').upsert({
+  const { data, error } = await _supabase.from('rosters').upsert({
     team, event_id: eventId, roster, confirmed,
     updated_by: session?.user?.id,
     updated_at: new Date().toISOString()
-  }, { onConflict: 'team,event_id' });
+  }, { onConflict: 'team,event_id' }).select();
   if(error){ setSyncStatus('error'); console.error(error); }
   else setSyncStatus('ok');
+  return data;
 }
 
 async function dbLoadOverrides(team) {
@@ -126,7 +127,7 @@ async function dbSaveOverride(team, eventId, overrides) {
   pauseRealtime(2000);
   await _supabase.from('manual_overrides').upsert({
     team, event_id: eventId, overrides
-  }, { onConflict: 'team,event_id' });
+  }, { onConflict: 'team,event_id' }).select();
 }
 
 // ══════════════════════════════════════
@@ -163,7 +164,7 @@ async function dbSaveMemberState(team, memberState) {
       key: 'member_state_' + team,
       value: JSON.stringify(memberState),
       updated_at: new Date().toISOString()
-    }, { onConflict: 'key' });
+    }, { onConflict: 'key' }).select();
     if (error) throw error;
     setSyncStatus('ok');
   } catch(e) { console.error('Member state save failed:', e); setSyncStatus('error'); }
