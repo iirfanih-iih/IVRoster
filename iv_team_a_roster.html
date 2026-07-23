@@ -1128,7 +1128,7 @@ function _generateRosterLogic(ev) {
       if (d === 'MPH Hall Entrance') { mN2 = pick(mC.length ? mC : mY, 1, d, true, true); fN2 = pick(fC.length ? fC : fY, 1, d, true, true); }
       else if (d === 'Seating & Discipline') { mN2 = pick(mY, 1, d, true, true); fN2 = pick(fY, 1, d, true, true); }
       else if (d === 'Sukreet') { mN2 = pick([...mY, ...mC.filter(m=>m.age>=8)], 2, d, true, true); fN2 = pick([...fY, ...fC.filter(m=>m.age>=8)], 2, d, true, true); }
-      else if (d === 'MPH Paat Windup') { mN2 = pick(mA, 1, d); fN2 = pick(fA, 1, d); }
+      else if (d === 'MPH Paat Windup') { mN2 = pick(mA, 2, d); fN2 = []; }
       row(d, mN2, fN2, 'youth');
     }
   }
