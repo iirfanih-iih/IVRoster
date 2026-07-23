@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IV Team B – Roster Generator</title>
 <link rel="icon" type="image/png" href="iv-logo.png">
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&family=Barlow:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&family=Barlow:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -133,6 +133,8 @@ thead{position:sticky;top:0;z-index:1;}
   .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;}
   .tab{white-space:nowrap;}
   .roster-card table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .roster-card table input[type="text"]{width:70px;}
+  #tabContent .roster-card:last-child{margin-bottom:80px;}
   .stats-row{gap:8px;}
   .stat-card{min-width:90px;}
   .fairness-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
@@ -141,7 +143,7 @@ thead{position:sticky;top:0;z-index:1;}
 .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:199;}
 .mobile-toggle{display:none;position:fixed;bottom:16px;right:16px;z-index:201;background:var(--primary);color:#fff;border:none;border-radius:24px;padding:0 16px 0 12px;height:48px;font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.4);font-family:'DM Sans',sans-serif;gap:6px;align-items:center;}
 @media print{.sidebar,.btn-row,.btn-sub,.btn-add-event,.btn-gen-all,.btn-reset,.tabs,.modal-overlay{display:none!important;}.app{display:block;}.main{padding:0;}.roster-card{box-shadow:none;border:1px solid #ccc;}}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:10px 20px;border-radius:20px;font-size:.8rem;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:10px 20px;border-radius:20px;font-size:.8rem;z-index:202;opacity:0;transition:opacity .3s;pointer-events:none;}
 .toast.show{opacity:1;}
 .sync-banner{position:fixed;top:0;left:0;right:0;padding:6px 16px;font-size:.75rem;text-align:center;z-index:300;transition:transform .3s;transform:translateY(-100%);}
 .sync-banner.show{transform:translateY(0);}
@@ -402,7 +404,7 @@ function getEventPeriodKey(ev){
   }
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
 }
-const REPEAT_ALLOWED_DUTIES=new Set(['Nandi Line','Nandi Passing','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution']);
+const REPEAT_ALLOWED_DUTIES=new Set(['Nandi','Nandi Line','Nandi Passing','Nandi Set-up','Nandi Centre','Nandi Trolley','Nandi Distribution']);
 const HARD_REQUIRED_DUTIES=new Set(['Nandi']);
 
 const DUTY_ASSIGNMENT_CONFIG = {
@@ -863,7 +865,8 @@ function generateRoster(i) {
   if (ev.locked && confirmedRosters.has(ev.id)) { showToast('This roster is confirmed and locked.'); return; }
 
   if (generatedRosters[ev.id] && !ev.locked) {
-    if (!confirm('Are you sure you want to regenerate this roster? Any manual changes will be lost.')) return;
+    const ok = await new Promise(r=>{const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;';o.innerHTML='<div style="background:#071628;border:1px solid rgba(79,195,247,0.18);border-radius:14px;padding:28px;width:360px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.5);"><div style="font-family:Barlow,sans-serif;font-size:14px;font-weight:800;color:#4FC3F7;margin-bottom:12px;">IV Roster</div><div style="font-size:12px;color:#E8F4FD;line-height:1.6;margin-bottom:18px;">Regenerate this roster? Any manual changes will be lost.</div><div style="display:flex;gap:8px;justify-content:flex-end;"><button id="_cNo" style="background:none;border:1px solid rgba(79,195,247,0.18);border-radius:8px;padding:8px 16px;font-size:12px;color:#7AAECB;cursor:pointer;font-family:Lexend,sans-serif;">Cancel</button><button id="_cYes" style="background:linear-gradient(135deg,#0C2461,#1976D2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lexend,sans-serif;">Regenerate</button></div></div>';document.body.appendChild(o);document.getElementById('_cYes').onclick=()=>{o.remove();r(true);};document.getElementById('_cNo').onclick=()=>{o.remove();r(false);};});
+    if(!ok) return;
     hasUnsavedChanges.delete(ev.id);
   }
   if (manualOverrides[ev.id]) delete manualOverrides[ev.id];
@@ -1434,7 +1437,8 @@ function unconfirmRoster(i){
 function clearEvent(i){
   const ev=events[i];
   if(!ev)return;
-  if(!confirm('Clear all duty assignments for '+ev.name+'? This cannot be undone.'))return;
+  const ok2 = await new Promise(r=>{const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;';o.innerHTML='<div style="background:#071628;border:1px solid rgba(79,195,247,0.18);border-radius:14px;padding:28px;width:360px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.5);"><div style="font-family:Barlow,sans-serif;font-size:14px;font-weight:800;color:#4FC3F7;margin-bottom:12px;">IV Roster</div><div style="font-size:12px;color:#E8F4FD;line-height:1.6;margin-bottom:18px;">Clear all duty assignments for <strong style="color:#fff;">'+ev.name+'</strong>? This cannot be undone.</div><div style="display:flex;gap:8px;justify-content:flex-end;"><button id="_c2No" style="background:none;border:1px solid rgba(79,195,247,0.18);border-radius:8px;padding:8px 16px;font-size:12px;color:#7AAECB;cursor:pointer;font-family:Lexend,sans-serif;">Cancel</button><button id="_c2Yes" style="background:#c0392b;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lexend,sans-serif;">Clear</button></div></div>';document.body.appendChild(o);document.getElementById('_c2Yes').onclick=()=>{o.remove();r(true);};document.getElementById('_c2No').onclick=()=>{o.remove();r(false);};});
+  if(!ok2)return;
   delete generatedRosters[ev.id];
   delete manualOverrides[ev.id];
   confirmedRosters.delete(ev.id);
@@ -1528,14 +1532,12 @@ function addEvent(){
   const notes=document.getElementById('newEventNotes').value.trim();
   const congregation=document.getElementById('newEventCongregation').value==='yes';
   if(!name||!date){showToast('Please enter event name and date.');return;}
-  const d=new Date(date);
-  const dateRaw=d.toLocaleDateString('en-NZ',{day:'numeric',month:'long',year:'numeric'});
   events.push({
     id:'e'+Date.now(),
     name,
     type,
-    dateRaw,
-    date:formatDateWithDay(dateRaw),
+    dateRaw:date,
+    date:formatDateWithDay(date),
     notes,
     congregation,
     locked:isBeforeToday(dateRaw),
@@ -1546,7 +1548,7 @@ function addEvent(){
 }
 
 function resetCycle(silent){
-  if(!silent&&!confirm('Reset all rosters? Historical data is preserved as fairness baseline.'))return;
+  if(!silent){const ok3=await new Promise(r=>{const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;';o.innerHTML='<div style="background:#071628;border:1px solid rgba(79,195,247,0.18);border-radius:14px;padding:28px;width:360px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.5);"><div style="font-family:Barlow,sans-serif;font-size:14px;font-weight:800;color:#4FC3F7;margin-bottom:12px;">IV Roster</div><div style="font-size:12px;color:#E8F4FD;line-height:1.6;margin-bottom:18px;">Reset all rosters? Historical data is preserved as fairness baseline.</div><div style="display:flex;gap:8px;justify-content:flex-end;"><button id="_c3No" style="background:none;border:1px solid rgba(79,195,247,0.18);border-radius:8px;padding:8px 16px;font-size:12px;color:#7AAECB;cursor:pointer;font-family:Lexend,sans-serif;">Cancel</button><button id="_c3Yes" style="background:#c0392b;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lexend,sans-serif;">Reset</button></div></div>';document.body.appendChild(o);document.getElementById('_c3Yes').onclick=()=>{o.remove();r(true);};document.getElementById('_c3No').onclick=()=>{o.remove();r(false);};});if(!ok3)return;}
   localStorage.removeItem('rosterGeneratorStateB');
   const march={};events.filter(e=>e.locked).forEach(e=>{march[e.id]=generatedRosters[e.id];});hasUnsavedChanges.clear();
   resetCounts();generatedRosters={...march};seedMarch();manualOverrides={};

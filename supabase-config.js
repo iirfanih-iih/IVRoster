@@ -39,7 +39,7 @@ function setSyncStatus(state){
   if(!el){
     el = document.createElement('div');
     el.id = 'syncDot';
-    el.style.cssText = 'position:fixed;bottom:12px;right:12px;width:10px;height:10px;border-radius:50%;z-index:999;transition:background .3s;cursor:help;';
+    el.style.cssText = 'position:fixed;bottom:72px;right:12px;width:10px;height:10px;border-radius:50%;z-index:999;transition:background .3s;cursor:help;';
     document.body.appendChild(el);
   }
   const states = {ok:{bg:'#00C853',t:'Synced'},saving:{bg:'#FFC107',t:'Saving…'},error:{bg:'#f44336',t:'Sync error'},off:{bg:'#555',t:'Offline mode'}};
