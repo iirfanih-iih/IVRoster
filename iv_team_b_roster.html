@@ -117,8 +117,29 @@ thead{position:sticky;top:0;z-index:1;}
 .sub-row{display:flex;gap:8px;align-items:center;margin-bottom:9px;}
 .sub-row label{font-size:.76rem;color:var(--text-light);min-width:80px;}
 .sub-row select{flex:1;background:var(--cream2);border:1px solid var(--border-color);border-radius:6px;padding:7px 9px;font-size:.8rem;font-family:'DM Sans',sans-serif;color:var(--text-main);outline:none;}
-@media(max-width:768px){.app{flex-direction:column;}.sidebar{width:100%;max-height:50vh;overflow-y:auto;display:none;}.sidebar.mobile-open{display:flex;}.main{padding:14px;}.modal-grid{grid-template-columns:1fr;}.mobile-toggle{display:block!important;}}
-.mobile-toggle{display:none;position:fixed;bottom:16px;right:16px;z-index:100;background:var(--primary);color:#fff;border:none;border-radius:50%;width:48px;height:48px;font-size:1.3rem;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);}
+@media(max-width:768px){
+  .app{flex-direction:column;}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:82vw;max-width:320px;z-index:200;transform:translateX(-100%);transition:transform .25s ease;display:flex!important;overflow-y:auto;box-shadow:4px 0 24px rgba(0,0,0,.5);}
+  .sidebar.mobile-open{transform:translateX(0);}
+  .sidebar-backdrop{display:block!important;}
+  .main{padding:12px;}
+  .modal-grid{grid-template-columns:1fr;}
+  .mobile-toggle{display:flex!important;}
+  header{flex-wrap:wrap;gap:8px;padding:8px 12px;}
+  header h1{font-size:1.1rem;}
+  .main-header{flex-direction:column;align-items:flex-start;}
+  .btn-row{width:100%;}
+  .btn-row .btn-generate,.btn-row .btn-gen-all,.btn-row .btn-save{flex:1;text-align:center;padding:10px 8px;font-size:.78rem;}
+  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;}
+  .tab{white-space:nowrap;}
+  .roster-card table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .stats-row{gap:8px;}
+  .stat-card{min-width:90px;}
+  .fairness-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
+  .overview-grid{grid-template-columns:1fr;}
+}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:199;}
+.mobile-toggle{display:none;position:fixed;bottom:16px;right:16px;z-index:201;background:var(--primary);color:#fff;border:none;border-radius:24px;padding:0 16px 0 12px;height:48px;font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.4);font-family:'DM Sans',sans-serif;gap:6px;align-items:center;}
 @media print{.sidebar,.btn-row,.btn-sub,.btn-add-event,.btn-gen-all,.btn-reset,.tabs,.modal-overlay{display:none!important;}.app{display:block;}.main{padding:0;}.roster-card{box-shadow:none;border:1px solid #ccc;}}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:10px 20px;border-radius:20px;font-size:.8rem;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;}
 .toast.show{opacity:1;}
@@ -149,7 +170,8 @@ thead{position:sticky;top:0;z-index:1;}
   <div><h1>IV Team B - Roster Generator</h1><p>Automated duty assignment · Alternate month cycle</p></div>
   <button id="themeToggle" onclick="cycleTheme()" style="margin-left:auto;background:none;border:1px solid var(--border-color);border-radius:8px;padding:6px 10px;font-size:1rem;cursor:pointer;" title="Toggle theme">🌙</button>
 </header>
-<button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open')">☰</button>
+<div class="sidebar-backdrop" onclick="closeSidebar()"></div>
+<button class="mobile-toggle" onclick="toggleSidebar()">☰ Events</button>
 <div class="app">
   <div class="sidebar">
     <div><div class="sidebar-title">Events</div><p style="font-size:.69rem;color:var(--text-light);margin-top:3px;">Select an event to view or generate</p></div>
@@ -192,6 +214,9 @@ thead{position:sticky;top:0;z-index:1;}
 <div class="sync-banner" id="syncBanner"></div>
 <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
 <script>
+function toggleSidebar(){const s=document.querySelector('.sidebar'),b=document.querySelector('.sidebar-backdrop');s.classList.toggle('mobile-open');b.style.display=s.classList.contains('mobile-open')?'block':'none';}
+function closeSidebar(){const s=document.querySelector('.sidebar'),b=document.querySelector('.sidebar-backdrop');s.classList.remove('mobile-open');b.style.display='none';}
+function sidebarEventSelected(){if(window.innerWidth<=768)closeSidebar();}
 // ══════════════════════════════════════
 // AUTH & PERMISSIONS
 // ══════════════════════════════════════
@@ -633,7 +658,7 @@ function renderEventList(){
   });
 }
 
-function selectEvent(i){selectedEventIdx=i;currentTab='event';renderEventList();renderMainForEvent(i);}
+function selectEvent(i){selectedEventIdx=i;currentTab='event';renderEventList();renderMainForEvent(i);sidebarEventSelected();}
 function switchTab(t,i){currentTab=t;renderMainForEvent(i);}
 
 // ══════════════════════════════════════

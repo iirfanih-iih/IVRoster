@@ -117,8 +117,29 @@ thead{position:sticky;top:0;z-index:1;}
 .sub-row{display:flex;gap:8px;align-items:center;margin-bottom:9px;}
 .sub-row label{font-size:.76rem;color:var(--text-light);min-width:80px;}
 .sub-row select{flex:1;background:var(--cream2);border:1px solid var(--border-color);border-radius:6px;padding:7px 9px;font-size:.8rem;font-family:'DM Sans',sans-serif;color:var(--text-main);outline:none;}
-@media(max-width:768px){.app{flex-direction:column;}.sidebar{width:100%;max-height:50vh;overflow-y:auto;display:none;}.sidebar.mobile-open{display:flex;}.main{padding:14px;}.modal-grid{grid-template-columns:1fr;}.mobile-toggle{display:block!important;}}
-.mobile-toggle{display:none;position:fixed;bottom:16px;right:16px;z-index:100;background:var(--primary);color:#fff;border:none;border-radius:50%;width:48px;height:48px;font-size:1.3rem;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);}
+@media(max-width:768px){
+  .app{flex-direction:column;}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:82vw;max-width:320px;z-index:200;transform:translateX(-100%);transition:transform .25s ease;display:flex!important;overflow-y:auto;box-shadow:4px 0 24px rgba(0,0,0,.5);}
+  .sidebar.mobile-open{transform:translateX(0);}
+  .sidebar-backdrop{display:block!important;}
+  .main{padding:12px;}
+  .modal-grid{grid-template-columns:1fr;}
+  .mobile-toggle{display:flex!important;}
+  header{flex-wrap:wrap;gap:8px;padding:8px 12px;}
+  header h1{font-size:1.1rem;}
+  .main-header{flex-direction:column;align-items:flex-start;}
+  .btn-row{width:100%;}
+  .btn-row .btn-generate,.btn-row .btn-gen-all,.btn-row .btn-save{flex:1;text-align:center;padding:10px 8px;font-size:.78rem;}
+  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;}
+  .tab{white-space:nowrap;}
+  .roster-card table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .stats-row{gap:8px;}
+  .stat-card{min-width:90px;}
+  .fairness-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
+  .overview-grid{grid-template-columns:1fr;}
+}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:199;}
+.mobile-toggle{display:none;position:fixed;bottom:16px;right:16px;z-index:201;background:var(--primary);color:#fff;border:none;border-radius:24px;padding:0 16px 0 12px;height:48px;font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.4);font-family:'DM Sans',sans-serif;gap:6px;align-items:center;}
 @media print{.sidebar,.btn-row,.btn-sub,.btn-add-event,.btn-gen-all,.btn-reset,.tabs,.modal-overlay{display:none!important;}.app{display:block;}.main{padding:0;}.roster-card{box-shadow:none;border:1px solid #ccc;}}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:10px 20px;border-radius:20px;font-size:.8rem;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;}
 .toast.show{opacity:1;}
@@ -149,7 +170,8 @@ thead{position:sticky;top:0;z-index:1;}
   <div><h1>IV Team A - Roster Generator</h1><p>Automated duty assignment · Alternate month cycle</p></div>
   <button id="themeToggle" onclick="cycleTheme()" style="margin-left:auto;background:none;border:1px solid var(--border-color);border-radius:8px;padding:6px 10px;font-size:1rem;cursor:pointer;" title="Toggle theme">🌙</button>
 </header>
-<button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open')">☰</button>
+<div class="sidebar-backdrop" onclick="closeSidebar()"></div>
+<button class="mobile-toggle" onclick="toggleSidebar()">☰ Events</button>
 <div class="app">
   <div class="sidebar">
     <div><div class="sidebar-title">Events</div><p style="font-size:.69rem;color:var(--text-light);margin-top:3px;">Select an event to view or generate</p></div>
@@ -192,6 +214,10 @@ thead{position:sticky;top:0;z-index:1;}
 <div class="sync-banner" id="syncBanner"></div>
 <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
 <script>
+function toggleSidebar(){const s=document.querySelector('.sidebar'),b=document.querySelector('.sidebar-backdrop');s.classList.toggle('mobile-open');b.style.display=s.classList.contains('mobile-open')?'block':'none';}
+function closeSidebar(){const s=document.querySelector('.sidebar'),b=document.querySelector('.sidebar-backdrop');s.classList.remove('mobile-open');b.style.display='none';}
+// Close sidebar when an event is selected on mobile
+function sidebarEventSelected(){if(window.innerWidth<=768)closeSidebar();}
 // ══════════════════════════════════════
 // AUTH & PERMISSIONS
 // ══════════════════════════════════════
@@ -292,6 +318,7 @@ const MEMBERS = {
     {name:"Salimah Charania",age:40,nandi:false},
     {name:"Sonal Mithani",age:40,nandi:false},
     {name:"Monisha Harjee",age:40,nandi:false},
+    {name:"Rohina Ghulami",age:35,nandi:false},
     // Senior
     {name:"Yasmin Charania",age:72,nandi:false},
     {name:"Gulshan Somjee",age:78,nandi:false},
@@ -711,13 +738,87 @@ function seedMarch(){
       { duty: 'Chai Station Pack-up', male: ['Amin Kotadia', 'Hussain Hasnani'], female: [], section: 'adults' },
     ],
     // m8 (Friday Majlis, 10 April 2026) — no historical data available, left unseeded
+    // Cycle 7: Jul–Aug 2026 — manually entered rosters
+    f1: [
+      {duty:'Nandi Labelling',male:[],female:['Noureen Rahim','Areesha Peerbhoy'],section:'adults',isNandi:false},
+      {duty:'Number 1',male:['Akbar Bhimani'],female:[],section:'adults',isNandi:false},
+      {duty:'Prayer Hall Entrance',male:['Aziz Punjwani','Zaraan Naveed'],female:['Iqra Vaswani','Izna Manesia'],section:'adults',isNandi:false},
+      {duty:'Shoe Entrance',male:['Rehaan Vazir'],female:['Eliza Raheem'],section:'adults',isNandi:false},
+      {duty:'Seating & Discipline',male:['Amirali Pirani','Aaryan Nathani'],female:['Gulshan Somjee','Alayna Lalwani'],section:'adults',isNandi:false},
+      {duty:'Sukreet',male:['Aziz Lokhandwala','Taraz Rupani'],female:['Nora Abbas','Raziya Vaswani'],section:'adults',isNandi:false},
+      {duty:'Ghatpaat Closing',male:['Ilyaan Khetani','Aly Shan Noorani'],female:['Aryaah Charolia','Misha Jelani'],section:'adults',isNandi:false},
+      {duty:'Safety Exit Door/Discipline',male:[],female:['Nilam Momin'],section:'adults',isNandi:false},
+      {duty:'Nandi',male:['Amin Kotadia'],female:['Nadya Jivani'],section:'adults',isNandi:true},
+      {duty:'Nandi Set-up',male:[],female:[],section:'adults',isNandi:false},
+      {duty:'Nandi Centre',male:[],female:['Sonam Panjwani'],section:'adults',isNandi:false},
+      {duty:'Nandi Trolley',male:[],female:['Moez Jivani'],section:'adults',isNandi:false},
+      {duty:'Nandi Distribution',male:['Naeem Chagani','Amin Kotadia'],female:[],section:'adults',isNandi:false},
+      {duty:'Water Station',male:[],female:[],section:'adults',isNandi:false},
+      {duty:'Chai Station',male:['Sajid Momin'],female:['Mahnoor Khowaja'],section:'adults',isNandi:false},
+      {duty:'Chai Station Pack-up',male:['Sajid Momin'],female:[],section:'adults',isNandi:false},
+      {duty:'Nandi Line',male:['Arqish Lalani','Arshiyaan Charolia'],female:['Farida Hudda','Yasmin Charania','Aiza Lakhani'],section:'adults',isNandi:false},
+      {duty:'Nandi Passing',male:['Kabir Vaswani','Raaiq Hasnani','Ryan Nathani','Shehran Harjee','Muiz Peerbhai'],female:['Zenia Sohani','Elys Lakhani','Ayra Tharani'],section:'adults',isNandi:false},
+    ],
+    f2: [
+      {duty:'Nandi Labelling',male:['Alazhar Malik'],female:['Rohina Ghulami'],section:'adults',isNandi:false},
+      {duty:'Number 1',male:['Aziz Lokhandwala'],female:['Sonam Panjwani'],section:'adults',isNandi:false},
+      {duty:'Prayer Hall Entrance',male:['Kabir Vaswani','Muiz Peerbhai'],female:['Zenia Sohani','Ayra Tharani'],section:'adults',isNandi:false},
+      {duty:'Shoe Entrance',male:[],female:[],section:'adults',isNandi:false},
+      {duty:'Seating & Discipline',male:['Akbar Bhimani'],female:['Monisha Harjee'],section:'adults',isNandi:false},
+      {duty:'Sukreet',male:['Sajid Momin','Arshiyaan Charolia'],female:['Noureen Rahim','Yasmin Charania'],section:'adults',isNandi:false},
+      {duty:'Ghatpaat Closing',male:['Arqish Lalani'],female:['Rhea Lalani'],section:'adults',isNandi:false},
+      {duty:'Safety Exit Door/Discipline',male:[],female:['Gulshan Somjee'],section:'adults',isNandi:false},
+      {duty:'Nandi',male:['Amirali Pirani'],female:['Farida Hudda'],section:'adults',isNandi:true},
+      {duty:'Nandi Set-up',male:[],female:[],section:'adults',isNandi:false},
+      {duty:'Nandi Centre',male:['Rehaan Vazir'],female:[],section:'adults',isNandi:false},
+      {duty:'Nandi Trolley',male:[],female:[],section:'adults',isNandi:false},
+      {duty:'Nandi Distribution',male:['Akbar Bhimani'],female:['Asmita Prasla'],section:'adults',isNandi:false},
+      {duty:'Chai Station',male:['Amin Kotadia'],female:['Nilam Momin'],section:'adults',isNandi:false},
+      {duty:'Chai Station Pack-up',male:['Amin Kotadia'],female:[],section:'adults',isNandi:false},
+      {duty:'Nandi Line',male:['Taraz Rupani','Ilyaan Khetani','Zaraan Naveed'],female:['Zarina Lalani','Yasmin Charania','Iqra Vaswani'],section:'adults',isNandi:false},
+      {duty:'Nandi Passing',male:['Shehran Harjee','Aly Shan Noorani'],female:['Misha Jelani','Nora Abbas','Mahreen Dossa'],section:'adults',isNandi:false},
+      {duty:'MPH Hall Entrance',male:['Aziz Punjwani'],female:['Zenia Sohani'],section:'youth',isNandi:false},
+      {duty:'Seating & Discipline',male:['Kabir Vaswani'],female:['Misha Jelani'],section:'youth',isNandi:false},
+      {duty:'Ghatpaat Closing',male:['Zaraan Naveed','Inayat Lokhandwala'],female:['Aiza Lakhani','Aryaah Charolia'],section:'youth',isNandi:false},
+    ],
+    f3: [
+      {duty:'Nandi Labelling',male:['Naeem Chagani'],female:['Monisha Harjee'],section:'adults',isNandi:false},
+      {duty:'Number 1',male:['Rehaan Vazir'],female:['Carys Lakhani'],section:'adults',isNandi:false},
+      {duty:'Prayer Hall Entrance',male:['Shehran Harjee','Ryan Nathani'],female:['Elys Lakhani','Izna Manesia'],section:'adults',isNandi:false},
+      {duty:'Shoe Entrance',male:['Arshiyaan Charolia'],female:['Nora Abbas'],section:'adults',isNandi:false},
+      {duty:'Seating & Discipline',male:['Hussain Hasnani'],female:['Nilam Momin'],section:'adults',isNandi:false},
+      {duty:'Safety Exit Door/Discipline',male:[],female:['Zarina Lalani'],section:'adults',isNandi:false},
+      {duty:'Nandi',male:['Moez Jivani'],female:['Sonam Panjwani'],section:'adults',isNandi:true},
+      {duty:'Nandi Set-up',male:[],female:[],section:'adults',isNandi:false},
+      {duty:'Nandi Centre',male:[],female:['Raziya Vaswani'],section:'adults',isNandi:false},
+      {duty:'Nandi Trolley',male:[],female:['Eliza Raheem'],section:'adults',isNandi:false},
+      {duty:'Nandi Distribution',male:[],female:['Farida Hudda','Rohina Ghulami'],section:'adults',isNandi:false},
+      {duty:'Nandi Line',male:['Akbar Bhimani','Amal Lalani','Aly Shan Noorani','Kabir Vaswani'],female:['Gulshan Somjee','Aryaah Charolia'],section:'adults',isNandi:false},
+      {duty:'Nandi Passing',male:['Raaiq Hasnani','Zaraan Naveed','Ilyaan Khetani','Inayat Lokhandwala'],female:['Ayra Tharani','Iqra Vaswani','Aiza Lakhani'],section:'adults',isNandi:false},
+    ],
+    f5: [
+      {duty:'Nandi Labelling',male:[],female:['Asmita Prasla','Mahnoor Khowaja'],section:'adults',isNandi:false},
+      {duty:'Number 1',male:['Naeem Chagani'],female:['Noureen Rahim'],section:'adults',isNandi:false},
+      {duty:'Shoe Entrance',male:['Arshiyaan Charolia'],female:['Eliza Raheem'],section:'adults',isNandi:false},
+      {duty:'Prayer Hall Entrance',male:['Ryan Nathani'],female:['Mahreen Dossa'],section:'adults',isNandi:false},
+      {duty:'Seating & Discipline',male:['Alazhar Malik'],female:['Nadya Jivani'],section:'adults',isNandi:false},
+      {duty:'Sukreet',male:[],female:[],section:'adults',isNandi:false},
+      {duty:'Ghatpaat Closing',male:[],female:[],section:'adults',isNandi:false},
+      {duty:'Safety Exit Door/Discipline',male:[],female:['Raziya Vaswani'],section:'adults',isNandi:false},
+      {duty:'Nandi',male:['Aziz Lokhandwala'],female:['Nilam Momin'],section:'adults',isNandi:true},
+      {duty:'Nandi Set-up',male:[],female:[],section:'adults',isNandi:false},
+      {duty:'Nandi Centre',male:[],female:['Rhea Lalani'],section:'adults',isNandi:false},
+      {duty:'Nandi Trolley',male:[],female:['Monisha Harjee'],section:'adults',isNandi:false},
+      {duty:'Nandi Distribution',male:['Hussain Hasnani'],female:[],section:'adults',isNandi:false},
+      {duty:'Nandi Line',male:['Akbar Bhimani','Aly Shan Noorani','Inayat Lokhandwala'],female:['Farida Hudda','Yasmin Charania','Zarina Lalani'],section:'adults',isNandi:false},
+      {duty:'Nandi Passing',male:['Aziz Punjwani','Arqish Lalani','Arshiyaan Charolia','Ilyaan Khetani','Shehran Harjee','Zaraan Naveed'],female:['Izna Manesia','Iqra Vaswani','Ayra Tharani'],section:'adults',isNandi:false},
+    ],
   };
   events.filter(e=>e.locked).forEach(ev=>{
     if (generatedRosters[ev.id]) return; // Don't overwrite if already exists
     const preset=historicalById[ev.id];
     if(!preset)return;
     const rows=sanitizeRosterRows(preset);
-    const period=getEventPeriodKey(ev);
     generatedRosters[ev.id]=rows;
   });
 }
@@ -755,11 +856,11 @@ function setupEvents(){
   ];
   // Team A Cycle 7: Jul 14 – Aug 12
   const cycle7=[
-    {id:'f1',name:'Chandraat',type:'chandraat',dateRaw:'2026-07-14',notes:'Formal Uniform'},
-    {id:'f2',name:'Friday Majlis',type:'friday',dateRaw:'2026-07-17',notes:'Casual Uniform'},
-    {id:'f3',name:'Baithulkhayal',type:'baithulkhayal',dateRaw:'2026-07-18',notes:'Casual Uniform'},
+    {id:'f1',name:'Chandraat',type:'chandraat',dateRaw:'2026-07-14',notes:'Formal Uniform',manualEntry:true},
+    {id:'f2',name:'Friday Majlis',type:'friday',dateRaw:'2026-07-17',notes:'Casual Uniform',manualEntry:true},
+    {id:'f3',name:'Baithulkhayal',type:'baithulkhayal',dateRaw:'2026-07-18',notes:'Casual Uniform',manualEntry:true},
     {id:'f4',name:'Yawm-i Ali',type:'eid',dateRaw:'2026-07-21',notes:'Formal Uniform'},
-    {id:'f5',name:'Paanch Baar Saal',type:'paanch',dateRaw:'2026-07-22',notes:'Casual Uniform'},
+    {id:'f5',name:'Paanch Baar Saal',type:'paanch',dateRaw:'2026-07-22',notes:'Casual Uniform',manualEntry:true},
     {id:'f6',name:'Friday Majlis',type:'friday',dateRaw:'2026-07-24',notes:'Casual Uniform'},
     {id:'f7',name:'Student Mijalis',type:'student',dateRaw:'2026-07-25',notes:'Casual Uniform'},
     {id:'f8',name:'Friday Majlis',type:'friday',dateRaw:'2026-07-31',notes:'Casual Uniform'},
@@ -856,7 +957,7 @@ function renderEventList(){
   });
 }
 
-function selectEvent(i){selectedEventIdx=i;currentTab='event';renderEventList();renderMainForEvent(i);}
+function selectEvent(i){selectedEventIdx=i;currentTab='event';renderEventList();renderMainForEvent(i);sidebarEventSelected();}
 function switchTab(t,i){currentTab=t;renderMainForEvent(i);}
 
 // ══════════════════════════════════════
