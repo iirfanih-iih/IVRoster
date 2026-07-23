@@ -1178,7 +1178,7 @@ function saveManualEntry(i){
   auditLog('Manual roster saved','roster','Event: '+ev.name);showToast('Manual roster saved \u2713');
 }
 
-function generateRoster(i) {
+async function generateRoster(i) {
   const ev = events[i];
   if (ev.locked && confirmedRosters.has(ev.id)) { showToast('This roster is confirmed and locked.'); return; }
 
@@ -1754,7 +1754,7 @@ function unconfirmRoster(i){
   renderMainForEvent(i);
 }
 
-function clearEvent(i){
+async function clearEvent(i){
   const ev=events[i];
   if(!ev)return;
   const ok2 = await new Promise(r=>{const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;';o.innerHTML='<div style="background:#071628;border:1px solid rgba(79,195,247,0.18);border-radius:14px;padding:28px;width:360px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.5);"><div style="font-family:Barlow,sans-serif;font-size:14px;font-weight:800;color:#4FC3F7;margin-bottom:12px;">IV Roster</div><div style="font-size:12px;color:#E8F4FD;line-height:1.6;margin-bottom:18px;">Clear all duty assignments for <strong style="color:#fff;">'+ev.name+'</strong>? This cannot be undone.</div><div style="display:flex;gap:8px;justify-content:flex-end;"><button id="_c2No" style="background:none;border:1px solid rgba(79,195,247,0.18);border-radius:8px;padding:8px 16px;font-size:12px;color:#7AAECB;cursor:pointer;font-family:Lexend,sans-serif;">Cancel</button><button id="_c2Yes" style="background:#c0392b;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lexend,sans-serif;">Clear</button></div></div>';document.body.appendChild(o);document.getElementById('_c2Yes').onclick=()=>{o.remove();r(true);};document.getElementById('_c2No').onclick=()=>{o.remove();r(false);};});
@@ -1867,7 +1867,7 @@ function addEvent(){
   document.getElementById('newEventName').value='';document.getElementById('newEventDate').value='';document.getElementById('newEventNotes').value='';
 }
 
-function resetCycle(silent){
+async function resetCycle(silent){
   if(!silent){const ok3=await new Promise(r=>{const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;';o.innerHTML='<div style="background:#071628;border:1px solid rgba(79,195,247,0.18);border-radius:14px;padding:28px;width:360px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.5);"><div style="font-family:Barlow,sans-serif;font-size:14px;font-weight:800;color:#4FC3F7;margin-bottom:12px;">IV Roster</div><div style="font-size:12px;color:#E8F4FD;line-height:1.6;margin-bottom:18px;">Reset all rosters? Historical data is preserved as fairness baseline.</div><div style="display:flex;gap:8px;justify-content:flex-end;"><button id="_c3No" style="background:none;border:1px solid rgba(79,195,247,0.18);border-radius:8px;padding:8px 16px;font-size:12px;color:#7AAECB;cursor:pointer;font-family:Lexend,sans-serif;">Cancel</button><button id="_c3Yes" style="background:#c0392b;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:Lexend,sans-serif;">Reset</button></div></div>';document.body.appendChild(o);document.getElementById('_c3Yes').onclick=()=>{o.remove();r(true);};document.getElementById('_c3No').onclick=()=>{o.remove();r(false);};});if(!ok3)return;}
   localStorage.removeItem('rosterGeneratorState');
   const march={};events.filter(e=>e.locked).forEach(e=>{march[e.id]=generatedRosters[e.id];});hasUnsavedChanges.clear();
